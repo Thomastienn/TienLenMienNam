@@ -378,6 +378,25 @@ public class BigTwo {
         return "NONE";
     }
 
+    public ArrayList<Card> findSameSymbol(ArrayList<Card> deck, int lengthCard){
+        for(int i = 0; i < (deck.size() - lengthCard + 1); i += 1){
+            ArrayList<Card> multipleCards = new ArrayList<>();
+            for(int j = i; j < i + lengthCard; j++){
+                Card card = deck.get(j);
+                multipleCards.add(card);
+            }
+            
+            // ! DEBUG PURPOSES
+            System.out.println(multipleCards);
+
+            if(allSameSymbol(multipleCards) && 
+            (compareToPrevCards(multipleCards) > 0)){
+                return multipleCards;
+            }
+        }
+        return new ArrayList<>();
+    }
+
     public ArrayList<Card> botsPlayed(ArrayList<Card> botCards){    
         ArrayList<Card> botPlayedCards = new ArrayList<>();
 
@@ -417,21 +436,7 @@ public class BigTwo {
             case "PAIR":
             case "TRIP":
             case "QUAD":
-                for(int i = 0; i < botCards.size()-cardsNeeded+1; i += 1){
-                    ArrayList<Card> multipleCards = new ArrayList<>();
-                    for(int j = i; j < i + cardsNeeded; j++){
-                        Card card = botCards.get(j);
-                        multipleCards.add(card);
-                    }
-                    
-                    System.out.println(multipleCards);
-
-                    if(allSameSymbol(multipleCards) && 
-                    (compareToPrevCards(multipleCards) > 0)){
-                        botPlayedCards = multipleCards;
-                        break;
-                    }
-                }
+                botPlayedCards = findSameSymbol(botCards, cardsNeeded);
                 break;
 
             // Default is SGT and SMD ONLY
@@ -443,6 +448,7 @@ public class BigTwo {
                 if(state.equals("SGT")){
                     // ! This solution cannot check 
                     // ! non-adjacent straight 
+                    // *FIXED
                     // for(int i = 0; i < botCards.size()-num+1; i += 1){
                     //     ArrayList<Card> multipleCards = new ArrayList<>();
                     //     for(int j = i; j < i + num; j++){
@@ -460,7 +466,17 @@ public class BigTwo {
                     // }
                     // ! END
 
-                    for(int i = 0; i < summaryBotCards.length; i++){
+                    // ! HAVEN'T compare value to the prev deck
+                    // ! LOGIC ERROR #0005
+                    // *FIXED
+
+                    // ! HAVEN'T compare last value
+
+                    // Loop through the count of the presence of each symbol
+                    // Ex: 3 4 5 6 7 8 9 10 J Q K A 2 -> length = MAX_CARDS
+                    //     0 2 1 1 0 0 0 2  3 3 0 1 2 -> Must total up to 13
+
+                    for(int i = 0; i < summaryBotCards.length-num; i++){
                         int symbolCount = summaryBotCards[i];
 
                         // Maybe the start of the straight
@@ -478,10 +494,18 @@ public class BigTwo {
                             // If there is a straight valid
                             // Don't need to check if count >= 3
                             // because it's checked previously
+                            // Have to check if the initial of card is greater than prev deck
                             if(count == num){
                                 // Get the straight in Card form
 
                                 String symbolStraight = symbolRank.get(i);
+                                String prevStartSymbol = previousPlayedCard.get(0).getSymbol();
+
+                                // It's smaller
+                                if(i < symbolRank.indexOf(prevStartSymbol)){
+                                    continue;
+                                }
+
                                 int symbolIndex = 0;
 
                                 // Get the inital value
@@ -499,8 +523,9 @@ public class BigTwo {
                                 // Ex: J Q K
                                 // Loop: J -> Q -> K
                                 // TODO
+
                                 for(int j = i+1; j < i+num; j++){
-                                    symbolStraight = symbolRank.get(j);
+                                    symbolStraight = symbolRank.get(j); 
 
                                     // Find the card that has symbolStraight 
                                     for(int k = symbolIndex+1; k < botCards.size(); k++){
@@ -705,22 +730,25 @@ public class BigTwo {
         reset();
         generateAllCard();
 
-        previousPlayedCard.add(cards.get(0));
-        //previousPlayedCard.add(cards.get(4));
-        //previousPlayedCard.add(cards.get(8));
+        previousPlayedCard.add(cards.get(23));
+        //previousPlayedCard.add(cards.get(21));
+
         currentState = stateOfCards(previousPlayedCard);
 
         System.out.println(previousPlayedCard);
 
         Player bot = listPlayers.get(0);
         ArrayList<Card> lCards = bot.getCardsAvailable();
+
         // int last = lCards.size()-1;
 
         // lCards.remove(last);
         // lCards.remove(last-1);
+        // lCards.remove(last-2);
 
-        // lCards.add(cards.get(0));
-        // lCards.add(cards.get(2));
+        // lCards.add(cards.get(51-4));
+        // lCards.add(cards.get(51-8));
+        // lCards.add(cards.get(51-12));
 
         // lCards.sort(((o1, o2) -> o1.compareTo(o2)));
 
