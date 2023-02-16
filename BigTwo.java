@@ -408,7 +408,7 @@ public class BigTwo {
         return new ArrayList<>();
     }
 
-    public ArrayList<Card> findStraight(ArrayList<Card> deck, int lengthCard){
+    public ArrayList<Card> findStraightPairs(ArrayList<Card> deck, int lengthCard, int nPairs){
         ArrayList<Card> result = new ArrayList<>();
 
         int[] summaryBotCards = new int[MAX_CARDS];
@@ -428,43 +428,56 @@ public class BigTwo {
             int symbolCount = summaryBotCards[i];
 
             // Maybe the start of the straight
-            if(symbolCount >= 1){
+            if(symbolCount >= nPairs){
 
                 // Count to find if the straight is long enough
                 int count = 0;
 
                 for(int j = i; j < i+lengthCard; j++){
-                    if(summaryBotCards[j] >= 1){
+                    if(summaryBotCards[j] >= nPairs){
                         count += 1;
                     }
                 }
 
+                // A straight or smack down must has a
+                // sequence range from 3 different symbols
+                if(count < 3){
+                    continue;
+                }
+
+                // A straight must be exactly the same length
+                // as the opponent cards played before
+                // but the smack down is different 
+                // -> the more pairs -> the more powerful
+
                 // If there is a straight valid
-                // Don't need to check if count >= 3
-                // because it's checked previously
-                // Have to check if the initial of card is greater than prev deck
-                if(count == lengthCard){
+                if(nPairs==1?(count == lengthCard):(count >= lengthCard)){
                     // Get the straight in Card form
 
                     String symbolStraight = symbolRank.get(i);
                     String prevStartSymbol = previousPlayedCard.get(0).getSymbol();
 
+                    // Have to check if the initial of card is greater than prev deck
                     // It's smaller
                     if(i < symbolRank.indexOf(prevStartSymbol)){
                         continue;
                     }
 
-                    int symbolIndex = 0;
+                    int symbolIndex = -1;
 
-                    // Get the inital value
-                    for(int j = 0; j < deck.size(); j++){
-                        Card card = deck.get(j);
-                        if(card.getSymbol().equals(symbolStraight)){
-                            result.add(card);
-                            symbolIndex = j;
-                            break;
+                    // Get all the initial value same symbol
+                    for(int o1 = 0; o1 < nPairs; o1++){
+                        // Get the inital value
+                        for(int j = symbolIndex+1; j < deck.size(); j++){
+                            Card card = deck.get(j);
+                            if(card.getSymbol().equals(symbolStraight)){
+                                result.add(card);
+                                symbolIndex = j;
+                                break;
+                            }
                         }
                     }
+                    
 
                     // *Get others
                     // Loop each symbol
@@ -474,54 +487,58 @@ public class BigTwo {
                     for(int j = i+1; j < i+lengthCard; j++){
                         symbolStraight = symbolRank.get(j); 
 
-                        // Find the card that has symbolStraight 
-                        for(int k = symbolIndex+1; k < deck.size(); k++){
-                            Card curCard = deck.get(k);
-                            if(curCard.getSymbol().equals(symbolStraight)){
-                                symbolIndex = k;
-                                result.add(curCard);
-                                break;
+                        // Find the card that has symbolStraight
+                        for(int o1 = 0; o1 < nPairs; o1++){ 
+                            for(int k = symbolIndex+1; k < deck.size(); k++){
+                                Card curCard = deck.get(k);
+                                if(curCard.getSymbol().equals(symbolStraight)){
+                                    symbolIndex = k;
+                                    result.add(curCard);
+                                    break;
+                                }
                             }
                         }
                     }
-
-                    // Check if the last symbol is greater than the last of the prev
-                    Card prevLastCard = previousPlayedCard.get(previousPlayedCard.size()-1);
-                    if(result.get(result.size()-1).compareTo(prevLastCard) < 0){
-                        // If there is more to check
-                        // Ex: bot has K spade and K heart
-                        // Prev is K diamond
-                        // result is K spade
-                        // We can continue to check the next K which is K heart
-                        result.remove(result.size()-1);
-                        
-                        // symbolIndex is the index of the last card
-                        // Start checking from it
-                        boolean foundGreater = false;
-
-                        for(int j = symbolIndex+1; j < deck.size(); j++){
-                            Card curCard = deck.get(j);
+                    
+                    if(count == lengthCard){
+                        // Check if the last symbol is greater than the last of the prev
+                        Card prevLastCard = previousPlayedCard.get(previousPlayedCard.size()-1);
+                        if(result.get(result.size()-1).compareTo(prevLastCard) < 0){
+                            // If there is more to check
+                            // Ex: bot has K spade and K heart
+                            // Prev is K diamond
+                            // result is K spade
+                            // We can continue to check the next K which is K heart
+                            result.remove(result.size()-1);
                             
-                            // If it goes too far
-                            // In the above example then it reaches A
-                            if(!curCard.getSymbol().equals(prevLastCard.getSymbol())){
-                                break;
-                            }
-                            
-                            // If it found the greater one 
-                            // In the above example, it found K heart
-                            if(curCard.compareTo(prevLastCard) > 0){
-                                foundGreater = true;
-                                result.add(curCard);
-                                break;
-                            }
-                        }
+                            // symbolIndex is the index of the last card
+                            // Start checking from it
+                            boolean foundGreater = false;
 
-                        // This straight not working
-                        if(!foundGreater){
-                            // Remove the result and start again
-                            result = new ArrayList<>();
-                            continue;
+                            for(int j = symbolIndex+1; j < deck.size(); j++){
+                                Card curCard = deck.get(j);
+                                
+                                // If it goes too far
+                                // In the above example then it reaches A
+                                if(!curCard.getSymbol().equals(prevLastCard.getSymbol())){
+                                    break;
+                                }
+                                
+                                // If it found the greater one 
+                                // In the above example, it found K heart
+                                if(curCard.compareTo(prevLastCard) > 0){
+                                    foundGreater = true;
+                                    result.add(curCard);
+                                    break;
+                                }
+                            }
+
+                            // This straight not working
+                            if(!foundGreater){
+                                // Remove the result and start again
+                                result = new ArrayList<>();
+                                continue;
+                            }
                         }
                     }
                     
@@ -536,7 +553,7 @@ public class BigTwo {
         }
         return new ArrayList<>();
     }
-    
+
     public ArrayList<Card> botsPlayed(ArrayList<Card> botCards, int botID){    
         ArrayList<Card> botPlayedCards = new ArrayList<>();
         
@@ -587,7 +604,7 @@ public class BigTwo {
                     // ! HAVEN'T compare last value
                     // *FIXED
 
-                    botPlayedCards = findStraight(botCards, num);
+                    botPlayedCards = findStraightPairs(botCards, num, 1);
 
                 } else if(state.equals("SMD")){
                     
@@ -797,32 +814,36 @@ public class BigTwo {
 
         // ! DEBUGGING PURPOSES
         // *DEBUG BOTS PLAY
-        // cards = new ArrayList<>();
-        // generateAllCard();
+        cards = new ArrayList<>();
+        generateAllCard();
 
-        // previousPlayedCard.add(cards.get(16));
-        // previousPlayedCard.add(cards.get(20));
-        // previousPlayedCard.add(cards.get(27));
+        previousPlayedCard.add(cards.get(16));
+        previousPlayedCard.add(cards.get(20));
+        previousPlayedCard.add(cards.get(26));
 
-        // currentState = stateOfCards(previousPlayedCard);
+        currentState = stateOfCards(previousPlayedCard);
 
-        // System.out.println(previousPlayedCard);
+        System.out.println(previousPlayedCard);
 
-        // Player bot = listPlayers.get(0);
-        // ArrayList<Card> lCards = bot.getCardsAvailable();
+        Player bot = listPlayers.get(0);
+        ArrayList<Card> lCards = bot.getCardsAvailable();
 
-        // // int last = lCards.size()-1;
+        // int last = lCards.size()-1;
 
-        // // lCards.remove(last);
-        // // lCards.remove(last-1);
+        // lCards.remove(last);
+        // lCards.remove(last-1);
+        // lCards.remove(last-2);
+        // lCards.remove(last-3);
 
-        // // lCards.add(cards.get(21));
-        // // lCards.add(cards.get(25));
+        // lCards.add(cards.get(17));
+        // lCards.add(cards.get(21));
+        // lCards.add(cards.get(25));
+        // lCards.add(cards.get(27));
 
-        // // lCards.sort(((o1, o2) -> o1.compareTo(o2)));
+        // lCards.sort(((o1, o2) -> o1.compareTo(o2)));
 
-        // printCards(bot);
-        // printCards(new Player(botsPlayed(lCards, 0), -1));
+        printCards(bot);
+        printCards(new Player(botsPlayed(lCards, 0), -1));
 
         // *DEBUG PRINT RANDOM CARDS
         // reset();
