@@ -1,10 +1,12 @@
 import java.util.ArrayList;
 
 public class Player {
+    private int id;
     private ArrayList<Card> cardsAvailable;
 
-    public Player(ArrayList<Card> cardsAvailable){
+    public Player(ArrayList<Card> cardsAvailable, int id){
         this.cardsAvailable = cardsAvailable;
+        this.id = id;
     }
 
     public ArrayList<Card> getCardsAvailable() {
@@ -23,4 +25,13 @@ public class Player {
             cardsAvailable.remove(card);
         }
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+    
 }

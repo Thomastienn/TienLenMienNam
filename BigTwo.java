@@ -24,9 +24,13 @@ public class BigTwo {
     // players: Number of players
     // MAX_CARDS: Number of cards that a player gets
     // round: The number of rounds played
+    // lastPlayerPlayed: stores the ID of the last played player
+    // allSymboolStates = {"NONE", "SINGLE", "PAIR", "TRIP", "QUAD"}
+
     // ** 
 
     private ArrayList<Card> previousPlayedCard;
+    private ArrayList<String> allSymbolStates;
     private ArrayList<Player> listPlayers;
     private ArrayList<String> symbolRank;
     private ArrayList<String> shapeRank;
@@ -44,6 +48,7 @@ public class BigTwo {
         players = Math.min(Math.max(players, 2), 4);
         
         this.previousPlayedCard = new ArrayList<>();
+        this.allSymbolStates = new ArrayList<>();
         this.listPlayers = new ArrayList<>();
         this.symbolRank = new ArrayList<>();
         this.shapeRank = new ArrayList<>();
@@ -55,11 +60,11 @@ public class BigTwo {
         this.currentTurn = 0;
         this.round = 0;
 
-        initRank();
+        init();
         reset();
     }
 
-    public void initRank(){
+    public void init(){
         // ! DO NOT CHANGE THE ORDER
         for(int i = 3; i <= 10; i++){
             symbolRank.add(Integer.toString(i));
@@ -76,6 +81,14 @@ public class BigTwo {
         shapeRank.add("club");
         shapeRank.add("diamond");
         shapeRank.add("heart");
+
+        // {"NONE", "SINGLE", "PAIR", "TRIP", "QUAD"}
+        // ! DO NOT CHANGE THE ORDER
+        allSymbolStates.add("NONE");
+        allSymbolStates.add("SINGLE");
+        allSymbolStates.add("PAIR");
+        allSymbolStates.add("TRIP");
+        allSymbolStates.add("QUAD");
     }
 
     public void reset(){
@@ -85,7 +98,7 @@ public class BigTwo {
     }
 
     public boolean checkFinish(){
-        return listPlayers.size() == 0;
+        return listPlayers.size() == 1;
     }
     public boolean checkWin(Player player){
         return player.getCardsAvailable().size() == 0;
@@ -118,7 +131,7 @@ public class BigTwo {
                 playerCards.add(card);
             }
             playerCards.sort(((o1, o2) -> o1.compareTo(o2)));
-            Player player = new Player(playerCards);
+            Player player = new Player(playerCards, i);
             listPlayers.add(player);
         }
 
@@ -389,7 +402,7 @@ public class BigTwo {
             // ! DEBUG PURPOSES
             System.out.println(multipleCards);
 
-            if(allSameSymbol(multipleCards) && 
+            if(allSameSymbol(multipleCards) &&
             (compareToPrevCards(multipleCards) > 0)){
                 return multipleCards;
             }
@@ -397,40 +410,120 @@ public class BigTwo {
         return new ArrayList<>();
     }
 
-    public ArrayList<Card> botsPlayed(ArrayList<Card> botCards){    
-        ArrayList<Card> botPlayedCards = new ArrayList<>();
-
-        // ! MAYBE USELESS
-        // ! Should be removed
+    public ArrayList<Card> findStraight(ArrayList<Card> deck, int lengthCard){
+        ArrayList<Card> result = new ArrayList<>();
 
         int[] summaryBotCards = new int[MAX_CARDS];
 
         // Summary the cards
-        for(int i = 0; i < botCards.size(); i++){
-            Card card = botCards.get(i);
+        for(int i = 0; i < deck.size(); i++){
+            Card card = deck.get(i);
             int index = symbolRank.indexOf(card.getSymbol());
             summaryBotCards[index] += 1;
         }
-        // ! END
 
-        int cardsNeeded = -1;
+        // Loop through the count of the presence of each symbol
+        // Ex: 3 4 5 6 7 8 9 10 J Q K A 2 -> length = MAX_CARDS
+        //     0 2 1 1 0 0 0 2  3 3 0 1 2 -> Must total up to 13
 
-        // ! OPTIMIZE in the future
-        if(currentState.equals("SINGLE")){
-            cardsNeeded = 1;
-        } else if(currentState.equals("PAIR")){
-            cardsNeeded = 2;
-        } else if(currentState.equals("TRIP")){
-            cardsNeeded = 3;
-        } else if(currentState.equals("QUAD")){
-            cardsNeeded = 4;
+        for(int i = 0; i < summaryBotCards.length-lengthCard; i++){
+            int symbolCount = summaryBotCards[i];
+
+            // Maybe the start of the straight
+            if(symbolCount >= 1){
+
+                // Count to find if the straight is long enough
+                int count = 0;
+
+                for(int j = i; j < i+lengthCard; j++){
+                    if(summaryBotCards[j] >= 1){
+                        count += 1;
+                    }
+                }
+
+                // If there is a straight valid
+                // Don't need to check if count >= 3
+                // because it's checked previously
+                // Have to check if the initial of card is greater than prev deck
+                if(count == lengthCard){
+                    // Get the straight in Card form
+
+                    String symbolStraight = symbolRank.get(i);
+                    String prevStartSymbol = previousPlayedCard.get(0).getSymbol();
+
+                    // It's smaller
+                    if(i < symbolRank.indexOf(prevStartSymbol)){
+                        continue;
+                    }
+
+                    int symbolIndex = 0;
+
+                    // Get the inital value
+                    for(int j = 0; j < deck.size(); j++){
+                        Card card = deck.get(j);
+                        if(card.getSymbol().equals(symbolStraight)){
+                            result.add(card);
+                            symbolIndex = j;
+                            break;
+                        }
+                    }
+
+                    // *Get others
+                    // Loop each symbol
+                    // Ex: J Q K
+                    // Loop: J -> Q -> K
+                    // TODO
+
+                    for(int j = i+1; j < i+lengthCard; j++){
+                        symbolStraight = symbolRank.get(j); 
+
+                        // Find the card that has symbolStraight 
+                        for(int k = symbolIndex+1; k < deck.size(); k++){
+                            Card curCard = deck.get(k);
+                            if(curCard.getSymbol().equals(symbolStraight)){
+                                symbolIndex = k;
+                                result.add(curCard);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    break;
+                }
+            }
         }
+        System.out.println(Arrays.toString(summaryBotCards));
+
+        if(result.size() != 0){
+            return result;
+        }
+        return new ArrayList<>();
+    }
+    
+    public ArrayList<Card> botsPlayed(ArrayList<Card> botCards, int botID){    
+        ArrayList<Card> botPlayedCards = new ArrayList<>();
+        
+        // ! OPTIMIZE in the future
+        int cardsNeeded = allSymbolStates.indexOf(currentState);
         // ! END
+
 
         // TODO: continue doing the logic
         // currentState cannot be NONE
         switch(currentState){
             case "ANY":
+                // If there is a straight -> play it
+                // TODO
+
+                // If there is cards from type TRIP to type SINGLE -> play it
+                for(int i = 3; i >= 1; i--){
+                    botPlayedCards = findSameSymbol(botCards, i);
+                    if(botPlayedCards.size() != 0){
+                        // Set current state
+                        currentState = allSymbolStates.get(i);
+                        break;
+                    }
+                }
                 break;
             case "SINGLE":  
             case "PAIR":
@@ -449,22 +542,6 @@ public class BigTwo {
                     // ! This solution cannot check 
                     // ! non-adjacent straight 
                     // *FIXED
-                    // for(int i = 0; i < botCards.size()-num+1; i += 1){
-                    //     ArrayList<Card> multipleCards = new ArrayList<>();
-                    //     for(int j = i; j < i + num; j++){
-                    //         Card card = botCards.get(j);
-                    //         multipleCards.add(card);
-                    //     }
-                        
-                    //     System.out.println(multipleCards);
-    
-                    //     if((!checkStraight(multipleCards).equals("NONE")) && 
-                    //     (compareToPrevCards(multipleCards) > 0)){
-                    //         botPlayedCards = multipleCards;
-                    //         break;
-                    //     }
-                    // }
-                    // ! END
 
                     // ! HAVEN'T compare value to the prev deck
                     // ! LOGIC ERROR #0005
@@ -472,78 +549,7 @@ public class BigTwo {
 
                     // ! HAVEN'T compare last value
 
-                    // Loop through the count of the presence of each symbol
-                    // Ex: 3 4 5 6 7 8 9 10 J Q K A 2 -> length = MAX_CARDS
-                    //     0 2 1 1 0 0 0 2  3 3 0 1 2 -> Must total up to 13
-
-                    for(int i = 0; i < summaryBotCards.length-num; i++){
-                        int symbolCount = summaryBotCards[i];
-
-                        // Maybe the start of the straight
-                        if(symbolCount >= 1){
-
-                            // Count to find if the straight is long enough
-                            int count = 0;
-
-                            for(int j = i; j < i+num; j++){
-                                if(summaryBotCards[j] >= 1){
-                                    count += 1;
-                                }
-                            }
-
-                            // If there is a straight valid
-                            // Don't need to check if count >= 3
-                            // because it's checked previously
-                            // Have to check if the initial of card is greater than prev deck
-                            if(count == num){
-                                // Get the straight in Card form
-
-                                String symbolStraight = symbolRank.get(i);
-                                String prevStartSymbol = previousPlayedCard.get(0).getSymbol();
-
-                                // It's smaller
-                                if(i < symbolRank.indexOf(prevStartSymbol)){
-                                    continue;
-                                }
-
-                                int symbolIndex = 0;
-
-                                // Get the inital value
-                                for(int j = 0; j < botCards.size(); j++){
-                                    Card card = botCards.get(j);
-                                    if(card.getSymbol().equals(symbolStraight)){
-                                        botPlayedCards.add(card);
-                                        symbolIndex = j;
-                                        break;
-                                    }
-                                }
-
-                                // *Get others
-                                // Loop each symbol
-                                // Ex: J Q K
-                                // Loop: J -> Q -> K
-                                // TODO
-
-                                for(int j = i+1; j < i+num; j++){
-                                    symbolStraight = symbolRank.get(j); 
-
-                                    // Find the card that has symbolStraight 
-                                    for(int k = symbolIndex+1; k < botCards.size(); k++){
-                                        Card curCard = botCards.get(k);
-                                        if(curCard.getSymbol().equals(symbolStraight)){
-                                            symbolIndex = k;
-                                            botPlayedCards.add(curCard);
-                                            break;
-                                        }
-                                    }
-                                }
-                                
-                                break;
-                            }
-                        }
-                    }
-
-                    System.out.println(Arrays.toString(summaryBotCards));
+                    botPlayedCards = findStraight(botCards, num);
 
                 } else if(state.equals("SMD")){
                     
@@ -554,6 +560,7 @@ public class BigTwo {
 
         if(botPlayedCards.size() != 0){
             previousPlayedCard = botPlayedCards;
+            lastPlayerPlayed = botID;
         }
         return botPlayedCards;
     }
@@ -604,14 +611,17 @@ public class BigTwo {
             Player currentPlayer = listPlayers.get(currentTurn);
             ArrayList<Card> currentPlayerCards = currentPlayer.getCardsAvailable();
 
-            // When everyone passes the turn
-            if(lastPlayerPlayed == currentTurn){
+            // ! BUG: It updates everyTIME
+            // *FIXED 
+
+            //When everyone passes the turn
+            if(currentPlayer.getId() == lastPlayerPlayed){
                 currentState = "ANY"; 
             }
 
             // If it's our turn
             // Main player moves
-            if(currentTurn == 0){
+            if(currentPlayer.getId() == 0){
                 // Play the card OR Pass the turn
                 System.out.println(currentState);
                 printCards(listPlayers.get(0));
@@ -636,8 +646,13 @@ public class BigTwo {
                         }
 
                         int indexCard = Integer.parseInt(indexCardStr);
-
-                        cardsPlayed.add(currentPlayerCards.get(indexCard));
+                        try {
+                            cardsPlayed.add(currentPlayerCards.get(indexCard));
+                        } catch (IndexOutOfBoundsException e) {
+                            // TODO
+                            System.out.println("OUT OF BOUNDS");
+                            continue;
+                        }
 
                     } while(true);
                     System.out.println();
@@ -659,13 +674,23 @@ public class BigTwo {
                             currentState = stateCard;
                             currentPlayer.playCard(cardsPlayed);
                             previousPlayedCard = cardsPlayed;
-                            lastPlayerPlayed = currentTurn;
+                            lastPlayerPlayed = 0;
 
                             // Update the state
                             if(currentState.equals("ANY")){
                                 currentState = stateCard;
                             }
+                        } else {
+                            // If player play different state
+                            // OR player plays lower rank than
+                            // previous cards that bot played
+                            // Play again new combination of cards
+                            continue;
                         }
+                    } else {
+                        // If it's not a valid state
+                        // Play again new combination of cards
+                        continue;
                     }
                 }
             
@@ -675,7 +700,8 @@ public class BigTwo {
                 // Find suitable cards and play
                 // If there is no possible move -> It skips the turn
                 printCards(currentPlayer);
-                currentPlayer.playCard(botsPlayed(currentPlayerCards));
+                currentPlayer.playCard(botsPlayed(currentPlayerCards, currentPlayer.getId()));
+                printCards(currentPlayer);
                 // *Uncomment line below when finish 
                 //Thread.sleep(3000);
             }
@@ -683,19 +709,18 @@ public class BigTwo {
             // If current player plays all the cards
             // ! BUG: 001
             if(checkWin(currentPlayer)){
-                listPlayers.remove(currentTurn);
-                if(currentTurn == 0){
+                if(currentPlayer.getId() == 0){
                     System.out.println("You win!");
                 } else {
                     int place = ((players-listPlayers.size())+1);
                     String postFix = "";
-
+                    
                     switch(place){
                         case 1:
-                            postFix = "st";
-                            break;
+                        postFix = "st";
+                        break;
                         case 2:
-                            postFix = "nd";
+                        postFix = "nd";
                             break;
                         case 3:
                             postFix = "rd";
@@ -703,10 +728,11 @@ public class BigTwo {
                         default:
                             postFix = "th";
                             break;
+                        }
+                        
+                        System.out.println("Player " + currentTurn + " finished in " + place + postFix + " place");
                     }
-
-                    System.out.println("Player " + currentTurn + " finished in " + place + postFix + " place");
-                }
+                listPlayers.remove(currentTurn);
                 currentTurn = Math.max(currentTurn-1, 0);
             }
 
@@ -714,6 +740,7 @@ public class BigTwo {
             // Detail: If you finished, then the currentTurn can still
             // be 0 and it will counted the second player as main player
 
+            System.out.println();
             System.out.println(currentTurn);
             currentTurn = (currentTurn+1)%(listPlayers.size());
         }
@@ -723,37 +750,38 @@ public class BigTwo {
 
     public void run() throws InterruptedException{
         // Main
-        // tempMain();
+         tempMain();
 
         // ! DEBUGGING PURPOSES
         // *DEBUG BOTS PLAY
-        reset();
-        generateAllCard();
+        // cards = new ArrayList<>();
+        // generateAllCard();
 
-        previousPlayedCard.add(cards.get(23));
-        //previousPlayedCard.add(cards.get(21));
+        // previousPlayedCard.add(cards.get(20));
+        // previousPlayedCard.add(cards.get(24));
+        // previousPlayedCard.add(cards.get(31));
 
-        currentState = stateOfCards(previousPlayedCard);
+        // currentState = stateOfCards(previousPlayedCard);
 
-        System.out.println(previousPlayedCard);
+        // System.out.println(previousPlayedCard);
 
-        Player bot = listPlayers.get(0);
-        ArrayList<Card> lCards = bot.getCardsAvailable();
+        // Player bot = listPlayers.get(0);
+        // ArrayList<Card> lCards = bot.getCardsAvailable();
 
-        // int last = lCards.size()-1;
+        // // int last = lCards.size()-1;
 
-        // lCards.remove(last);
-        // lCards.remove(last-1);
-        // lCards.remove(last-2);
+        // // lCards.remove(last);
+        // // lCards.remove(last-1);
+        // // lCards.remove(last-2);
 
-        // lCards.add(cards.get(51-4));
-        // lCards.add(cards.get(51-8));
-        // lCards.add(cards.get(51-12));
+        // // lCards.add(cards.get(51-4));
+        // // lCards.add(cards.get(51-8));
+        // // lCards.add(cards.get(51-12));
 
-        // lCards.sort(((o1, o2) -> o1.compareTo(o2)));
+        // // lCards.sort(((o1, o2) -> o1.compareTo(o2)));
 
-        printCards(bot);
-        printCards(new Player(botsPlayed(lCards)));
+        // printCards(bot);
+        // printCards(new Player(botsPlayed(lCards, 0), -1));
 
         // *DEBUG PRINT RANDOM CARDS
         // reset();
