@@ -484,6 +484,46 @@ public class BigTwo {
                             }
                         }
                     }
+
+                    // Check if the last symbol is greater than the last of the prev
+                    Card prevLastCard = previousPlayedCard.get(previousPlayedCard.size()-1);
+                    if(result.get(result.size()-1).compareTo(prevLastCard) < 0){
+                        // If there is more to check
+                        // Ex: bot has K spade and K heart
+                        // Prev is K diamond
+                        // result is K spade
+                        // We can continue to check the next K which is K heart
+                        result.remove(result.size()-1);
+                        
+                        // symbolIndex is the index of the last card
+                        // Start checking from it
+                        boolean foundGreater = false;
+
+                        for(int j = symbolIndex+1; j < deck.size(); j++){
+                            Card curCard = deck.get(j);
+                            
+                            // If it goes too far
+                            // In the above example then it reaches A
+                            if(!curCard.getSymbol().equals(prevLastCard.getSymbol())){
+                                break;
+                            }
+                            
+                            // If it found the greater one 
+                            // In the above example, it found K heart
+                            if(curCard.compareTo(prevLastCard) > 0){
+                                foundGreater = true;
+                                result.add(curCard);
+                                break;
+                            }
+                        }
+
+                        // This straight not working
+                        if(!foundGreater){
+                            // Remove the result and start again
+                            result = new ArrayList<>();
+                            continue;
+                        }
+                    }
                     
                     break;
                 }
@@ -545,6 +585,7 @@ public class BigTwo {
                     // *FIXED
 
                     // ! HAVEN'T compare last value
+                    // *FIXED
 
                     botPlayedCards = findStraight(botCards, num);
 
@@ -749,16 +790,19 @@ public class BigTwo {
 
     public void run() throws InterruptedException{
         // Main
-         tempMain();
+        //tempMain();
+
+        // Get the system
+        // System.getProperty("os.name")
 
         // ! DEBUGGING PURPOSES
         // *DEBUG BOTS PLAY
         // cards = new ArrayList<>();
         // generateAllCard();
 
+        // previousPlayedCard.add(cards.get(16));
         // previousPlayedCard.add(cards.get(20));
-        // previousPlayedCard.add(cards.get(24));
-        // previousPlayedCard.add(cards.get(31));
+        // previousPlayedCard.add(cards.get(27));
 
         // currentState = stateOfCards(previousPlayedCard);
 
@@ -771,11 +815,9 @@ public class BigTwo {
 
         // // lCards.remove(last);
         // // lCards.remove(last-1);
-        // // lCards.remove(last-2);
 
-        // // lCards.add(cards.get(51-4));
-        // // lCards.add(cards.get(51-8));
-        // // lCards.add(cards.get(51-12));
+        // // lCards.add(cards.get(21));
+        // // lCards.add(cards.get(25));
 
         // // lCards.sort(((o1, o2) -> o1.compareTo(o2)));
 
