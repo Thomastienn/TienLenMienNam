@@ -1,8 +1,6 @@
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Scanner;
+import java.util.Arrays;
 
 public class BigTwo {
     // Attributes
@@ -472,7 +470,6 @@ public class BigTwo {
                     // Loop each symbol
                     // Ex: J Q K
                     // Loop: J -> Q -> K
-                    // TODO
 
                     for(int j = i+1; j < i+lengthCard; j++){
                         symbolStraight = symbolRank.get(j); 
@@ -649,7 +646,6 @@ public class BigTwo {
                         try {
                             cardsPlayed.add(currentPlayerCards.get(indexCard));
                         } catch (IndexOutOfBoundsException e) {
-                            // TODO
                             System.out.println("OUT OF BOUNDS");
                             continue;
                         }
@@ -707,7 +703,6 @@ public class BigTwo {
             }
 
             // If current player plays all the cards
-            // ! BUG: 001
             if(checkWin(currentPlayer)){
                 if(currentPlayer.getId() == 0){
                     System.out.println("You win!");
@@ -730,8 +725,8 @@ public class BigTwo {
                             break;
                         }
                         
-                        System.out.println("Player " + currentTurn + " finished in " + place + postFix + " place");
-                    }
+                        System.out.println("Player " + currentPlayer.getId() + " finished in " + place + postFix + " place");
+                }
                 listPlayers.remove(currentTurn);
                 currentTurn = Math.max(currentTurn-1, 0);
             }
@@ -739,11 +734,15 @@ public class BigTwo {
             // ! DEBUG ID: 001
             // Detail: If you finished, then the currentTurn can still
             // be 0 and it will counted the second player as main player
+            // *FIXED
 
             System.out.println();
             System.out.println(currentTurn);
             currentTurn = (currentTurn+1)%(listPlayers.size());
         }
+        // Last player -> lose
+        Player lastPlayer = listPlayers.get(0);
+        System.out.println("Player " + lastPlayer.getId() + " loses!");
 
         sc.close();
     }
