@@ -201,7 +201,7 @@ public class BigTwo {
                 int index = symbolRank.indexOf(card.getSymbol());
                 symbolsPlayerCards[index] += 1;
 
-                if(card.getSymbol() == "3" && card.getShape() == "spade"){
+                if(card.getValue() == 0){
                     hasThreeSpade = true;
                 } 
                 if(card.isRed() != colorAllCards){
@@ -221,8 +221,9 @@ public class BigTwo {
 
 
             // Check quad 2 and quad 3
+            // Quad 3 only valid if it's the first round
             if(symbolsPlayerCards[MAX_CARDS-1] == 4 ||
-                (symbolsPlayerCards[0] == 4)){
+                (symbolsPlayerCards[0] == 4 && round == 0)){
                 return i;
             }
 
@@ -587,7 +588,7 @@ public class BigTwo {
                 // You almost run out of cards
                 // -> Play it
                 int smackDown = -1;
-                for(int i = 4; i >= 3; i++){
+                for(int i = 4; i >= 3; i--){
                     botPlayedCards = findStraightPairs(botCards, i, 2);
                     
                     // If it has smack down and a single last card
@@ -812,139 +813,152 @@ public class BigTwo {
         // A round
         // TODO: Add more rounds instead of only 1
 
-        while(!(checkFinish())){
-            Player currentPlayer = listPlayers.get(currentTurn);
-            ArrayList<Card> currentPlayerCards = currentPlayer.getCardsAvailable();
+        String userContinue;
+        do {
+            while(!(checkFinish())){
+                Player currentPlayer = listPlayers.get(currentTurn);
+                ArrayList<Card> currentPlayerCards = currentPlayer.getCardsAvailable();
 
-            // ! BUG: It updates everyTIME
-            // *FIXED 
+                // ! BUG: It updates everyTIME
+                // *FIXED 
 
-            //When everyone passes the turn
-            if(currentPlayer.getId() == lastPlayerPlayed){
-                currentState = "ANY"; 
-            }
+                //When everyone passes the turn
+                if(currentPlayer.getId() == lastPlayerPlayed){
+                    currentState = "ANY"; 
+                }
 
-            // If it's our turn
-            // Main player moves
-            if(currentPlayer.getId() == 0){
-                // Play the card OR Pass the turn
-                System.out.println(currentState);
-                printCards(listPlayers.get(0));
+                // If it's our turn
+                // Main player moves
+                if(currentPlayer.getId() == 0){
+                    // Play the card OR Pass the turn
+                    System.out.println(currentState);
+                    printCards(listPlayers.get(0));
 
-                System.out.print("Play or Skip (P/S): ");
-                String playerChoose = sc.nextLine();
+                    System.out.print("Play or Skip (P/S): ");
+                    String playerChoose = sc.nextLine();
 
-                // Player plays
-                if(playerChoose.equalsIgnoreCase("P") ||
-                    currentState.equals("ANY")){
-                    ArrayList<Card> cardsPlayed = new ArrayList<>();
+                    // Player plays
+                    if(playerChoose.equalsIgnoreCase("P") ||
+                        currentState.equals("ANY")){
+                        ArrayList<Card> cardsPlayed = new ArrayList<>();
 
-                    String indexCardStr;
+                        String indexCardStr;
 
-                    // Select cards to play
-                    do {
-                        System.out.print("Choose card: ");
-                        indexCardStr = sc.nextLine();
+                        // Select cards to play
+                        do {
+                            System.out.print("Choose card: ");
+                            indexCardStr = sc.nextLine();
 
-                        if(indexCardStr.length() == 0){
-                            break;
-                        }
+                            if(indexCardStr.length() == 0){
+                                break;
+                            }
 
-                        int indexCard = Integer.parseInt(indexCardStr);
-                        try {
-                            cardsPlayed.add(currentPlayerCards.get(indexCard));
-                        } catch (IndexOutOfBoundsException e) {
-                            System.out.println("OUT OF BOUNDS");
+                            int indexCard = Integer.parseInt(indexCardStr);
+                            try {
+                                cardsPlayed.add(currentPlayerCards.get(indexCard));
+                            } catch (IndexOutOfBoundsException e) {
+                                System.out.println("OUT OF BOUNDS");
+                                continue;
+                            }
+
+                        } while(true);
+                        System.out.println();
+
+                        // Play the cards
+                        String stateCard = stateOfCards(cardsPlayed);
+
+                        // ! BUG: 0002 
+                        // ! Haven't check if the value of the cards is larger
+                        // ! than the previous card
+
+                        // If the cards are a valid move 
+                        // If the cards is the same state as current state
+                        // ANY is when player can do any move
+                        if(checkValid(cardsPlayed, stateCard)){
+                            currentState = stateCard;
+                            currentPlayer.playCard(cardsPlayed);
+                            previousPlayedCard = cardsPlayed;
+                            lastPlayerPlayed = 0;
+
+                            // Update the state
+                            if(currentState.equals("ANY")){
+                                currentState = stateCard;
+                            }
+                        } else {
+                            // If player play different state
+                            // OR player plays lower rank than
+                            // previous cards that bot played
+                            // If it's not a valid state
+                            // Play again new combination of cards
                             continue;
                         }
-
-                    } while(true);
-                    System.out.println();
-
-                    // Play the cards
-                    String stateCard = stateOfCards(cardsPlayed);
-
-                    // ! BUG: 0002 
-                    // ! Haven't check if the value of the cards is larger
-                    // ! than the previous card
-
-                    // If the cards are a valid move 
-                    // If the cards is the same state as current state
-                    // ANY is when player can do any move
-                    if(checkValid(cardsPlayed, stateCard)){
-                        currentState = stateCard;
-                        currentPlayer.playCard(cardsPlayed);
-                        previousPlayedCard = cardsPlayed;
-                        lastPlayerPlayed = 0;
-
-                        // Update the state
-                        if(currentState.equals("ANY")){
-                            currentState = stateCard;
-                        }
-                    } else {
-                        // If player play different state
-                        // OR player plays lower rank than
-                        // previous cards that bot played
-                        // If it's not a valid state
-                        // Play again new combination of cards
-                        continue;
                     }
-                }
-            
-            // Bot moves
-            // If it's empty means bots skips all
-            } else {
-                // Find suitable cards and play
-                // If there is no possible move -> It skips the turn
-                printCards(currentPlayer);
-                currentPlayer.playCard(botsPlayed(currentPlayerCards, currentPlayer.getId()));
-                printCards(currentPlayer);
-                // *Uncomment line below when finish 
-                //Thread.sleep(3000);
-            }
-
-            // If current player plays all the cards
-            if(checkWin(currentPlayer)){
-                if(currentPlayer.getId() == 0){
-                    System.out.println("You win!");
+                
+                // Bot moves
+                // If it's empty means bots skips all
                 } else {
-                    int place = ((players-listPlayers.size())+1);
-                    String postFix = "";
-                    
-                    switch(place){
-                        case 1:
-                        postFix = "st";
-                        break;
-                        case 2:
-                        postFix = "nd";
-                            break;
-                        case 3:
-                            postFix = "rd";
-                            break;
-                        default:
-                            postFix = "th";
-                            break;
-                        }
-                        
-                        System.out.println("Player " + currentPlayer.getId() + " finished in " + place + postFix + " place");
+                    // Find suitable cards and play
+                    // If there is no possible move -> It skips the turn
+                    printCards(currentPlayer);
+                    currentPlayer.playCard(botsPlayed(currentPlayerCards, currentPlayer.getId()));
+                    printCards(currentPlayer);
+                    // *Uncomment line below when finish 
+                    //Thread.sleep(3000);
                 }
-                listPlayers.remove(currentTurn);
-                currentTurn = Math.max(currentTurn-1, 0);
+
+                // If current player plays all the cards
+                if(checkWin(currentPlayer)){
+                    if(currentPlayer.getId() == 0){
+                        System.out.println("You win!");
+                    } else {
+                        int place = ((players-listPlayers.size())+1);
+                        String postFix = "";
+                        
+                        switch(place){
+                            case 1:
+                            postFix = "st";
+                            break;
+                            case 2:
+                            postFix = "nd";
+                                break;
+                            case 3:
+                                postFix = "rd";
+                                break;
+                            default:
+                                postFix = "th";
+                                break;
+                            }
+                            
+                            System.out.println("Player " + currentPlayer.getId() + " finished in " + place + postFix + " place");
+                    }
+                    listPlayers.remove(currentTurn);
+                    currentTurn = Math.max(currentTurn-1, 0);
+                }
+
+                // ! DEBUG ID: 001
+                // Detail: If you finished, then the currentTurn can still
+                // be 0 and it will counted the second player as main player
+                // *FIXED
+
+                System.out.println();
+                System.out.println(currentTurn);
+                currentTurn = (currentTurn+1)%(listPlayers.size());
+            }
+            // Last player -> lose
+            Player lastPlayer = listPlayers.get(0);
+            System.out.println("Player " + lastPlayer.getId() + " loses!");
+            
+            System.out.print("Do you want to continue (Y/N): ");
+            userContinue = sc.nextLine();
+            if(userContinue.equalsIgnoreCase("N") ||
+            userContinue.equalsIgnoreCase("no") || 
+            userContinue.equalsIgnoreCase("nope") || 
+            userContinue.equalsIgnoreCase("nah")){
+                break;
             }
 
-            // ! DEBUG ID: 001
-            // Detail: If you finished, then the currentTurn can still
-            // be 0 and it will counted the second player as main player
-            // *FIXED
-
-            System.out.println();
-            System.out.println(currentTurn);
-            currentTurn = (currentTurn+1)%(listPlayers.size());
-        }
-        // Last player -> lose
-        Player lastPlayer = listPlayers.get(0);
-        System.out.println("Player " + lastPlayer.getId() + " loses!");
-        round += 1;
+            round += 1;
+        } while(true);
 
         sc.close();
     }
@@ -957,6 +971,10 @@ public class BigTwo {
         // System.getProperty("os.name")
 
         // ! DEBUGGING PURPOSES
+        // *DEBUG PRINT ALL THE COMBINATION OF CARDS
+        // cards = new ArrayList<>();
+        // generateAllCard();
+        // System.out.println(cards + " " + cards.size());
         // *DEBUG BOTS PLAY
         // cards = new ArrayList<>();
         // generateAllCard();
