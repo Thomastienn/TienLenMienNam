@@ -47,7 +47,6 @@ public class BigTwo {
         // Set players in range 2 - 4 players
         players = Math.min(Math.max(players, 2), 4);
         
-        this.min = new Card("", "", 55, false);
         this.previousPlayedCard = new ArrayList<>();
         this.allSymbolStates = new ArrayList<>();
         this.listPlayers = new ArrayList<>();
@@ -92,8 +91,10 @@ public class BigTwo {
     }
 
     public void reset(){
+        this.min = new Card("", "", 55, false);
         this.listPlayers = new ArrayList<>();
         this.cards = new ArrayList<>();
+
         generateAllCard();
         splitCards();
     }
@@ -140,14 +141,13 @@ public class BigTwo {
                     }
                 }
 
-                cards.remove(randomIndex);
                 playerCards.add(card);
+                cards.remove(randomIndex);
             }
             playerCards.sort(((o1, o2) -> o1.compareTo(o2)));
             Player player = new Player(playerCards, i);
             listPlayers.add(player);
         }
-
         // DEBUG ADD SPECIFIC CARDS TO PLAYER
         
         // ArrayList<Card> playerCardsDebug = new ArrayList<>();
@@ -836,6 +836,7 @@ public class BigTwo {
     }
 
     public boolean checkValid(ArrayList<Card> cardsPlayed, String playerCardsState){
+        // ! BUG: Have to check if it's the first play, player cards must have the min
         boolean checkSmacking = false;
         
         // Check if player can smack down
@@ -900,9 +901,13 @@ public class BigTwo {
             }
         }
 
+        boolean playMin = (previousPlayedCard.size()==0 && round == 0 &&
+                            cardsPlayed.contains(min));
+    
         return (!playerCardsState.equals("NONE") && 
-        (currentState.equals("ANY") || playerCardsState.equals(currentState) || checkSmacking) && 
-        (compareToPrevCards(cardsPlayed) > 0) || checkSmacking);
+        ((currentState.equals("ANY")) || playerCardsState.equals(currentState) || checkSmacking) && 
+        ((compareToPrevCards(cardsPlayed) > 0) || checkSmacking) && 
+        playMin);
     }
 
     public void tempMain() throws InterruptedException{
@@ -920,9 +925,6 @@ public class BigTwo {
 
         // Many rounds 
         do {
-            // Init
-            reset();
-
             // Instant-win winner
             int winner = checkInstantWin();
             if(winner != -1){
@@ -930,7 +932,7 @@ public class BigTwo {
                 printCards(listPlayers.get(winner));
                 return;
             }
-
+            
             // Main flow of a round
             while(!(checkFinish())){
                 Player currentPlayer = listPlayers.get(currentTurn);
@@ -1088,6 +1090,7 @@ public class BigTwo {
             }
 
             round += 1;
+            reset();
         } while(true);
 
         sc.close();
