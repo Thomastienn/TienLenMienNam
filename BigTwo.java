@@ -888,18 +888,25 @@ public class BigTwo {
                         String indexCardStr;
 
                         // Select cards to play
-                        // TODO: Delete cards if user decide change strategy
                         do {
                             System.out.print("Choose card: ");
                             indexCardStr = sc.nextLine();
-
+                            
                             if(indexCardStr.length() == 0){
                                 break;
                             }
-
+                            
                             int indexCard = Integer.parseInt(indexCardStr);
+
+                            // TODO: Delete cards if user decide change strategy
                             try {
-                                cardsPlayed.add(currentPlayerCards.get(indexCard));
+                                Card played = currentPlayerCards.get(indexCard);
+                                int idx = cardsPlayed.indexOf(played); 
+                                if(idx < 0){
+                                    cardsPlayed.add(played);
+                                } else {
+                                    cardsPlayed.remove(idx);
+                                }
                             } catch (IndexOutOfBoundsException e) {
                                 System.out.println("OUT OF BOUNDS");
                                 continue;
@@ -944,6 +951,7 @@ public class BigTwo {
                 } else {
                     // Find suitable cards and play
                     // If there is no possible move -> It skips the turn
+                    System.out.println(previousPlayedCard);
                     printCards(currentPlayer);
                     currentPlayer.playCard(botsPlayed(currentPlayerCards, currentPlayer.getId()));
                     printCards(currentPlayer);
