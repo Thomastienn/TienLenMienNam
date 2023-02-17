@@ -663,6 +663,34 @@ public class BigTwo {
                     }
                 }
 
+                // TODO
+                // Can smack down a 2 with smack down or quad
+                boolean singleTwo = (currentState.equals("SINGLE") &&
+                previousPlayedCard.get(0).getSymbol().equals("2"));
+
+                boolean pairTwo = (currentState.equals("PAIR") &&
+                previousPlayedCard.get(0).getSymbol().equals("2") &&
+                previousPlayedCard.get(1).getSymbol().equals("2"));
+
+                if(singleTwo || pairTwo){
+
+                    if(botPlayedCards.size() == 0){
+                        // Check if there is a quad first
+                        botPlayedCards = findSameSymbol(botCards, 4);
+
+                        // Next check if there is a 4-pair smack down
+                        if(botPlayedCards.size() == 0){
+                            botPlayedCards = findStraightPairs(botCards, 4, 2);
+                        }
+
+                        // Check only smack down single card
+                        // Next check 3-pair smack down
+                        if((botPlayedCards.size() == 0) && singleTwo){
+                            botPlayedCards = findStraightPairs(botCards, 3, 2);
+                        }
+                    }
+                }
+
                 break;
 
             // Default is SGT and SMD ONLY
@@ -845,6 +873,7 @@ public class BigTwo {
                 // Main player moves
                 if(currentPlayer.getId() == 0){
                     // Play the card OR Pass the turn
+                    System.out.println("PREV: " + previousPlayedCard);
                     System.out.println(currentState);
                     printCards(listPlayers.get(0));
 
@@ -957,7 +986,7 @@ public class BigTwo {
                 // *FIXED
 
                 System.out.println();
-                System.out.println(currentTurn);
+                System.out.println("Turn " + currentTurn);
                 currentTurn = (currentTurn+1)%(listPlayers.size());
             }
             // Last player -> lose
