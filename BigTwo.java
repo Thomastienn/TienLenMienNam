@@ -664,6 +664,14 @@ public class BigTwo {
             case "PAIR":
             case "TRIP":
             case "QUAD":
+                // If there is less than 3 cards and state is ANY
+                // Then play the largest card
+                // So higher chance that the bot wins
+                if(currentState.equals("SINGLE") && (botCards.size() <= 3)){
+                    botPlayedCards.add(botCards.get(botCards.size()-1));
+                    break;
+                }
+
                 botPlayedCards = findSameSymbol(botCards, cardsNeeded);
                 
                 // A quad can be smacked back by a 4-pair
