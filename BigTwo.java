@@ -63,7 +63,7 @@ public class BigTwo {
         reset();
     }
 
-    public void init(){
+    private void init(){
         // ! DO NOT CHANGE THE ORDER
         for(int i = 3; i <= 10; i++){
             symbolRank.add(Integer.toString(i));
@@ -90,7 +90,7 @@ public class BigTwo {
         allSymbolStates.add("QUAD");
     }
 
-    public void reset(){
+    private void reset(){
         this.min = new Card("", "", 55, false);
         this.listPlayers = new ArrayList<>();
         this.cards = new ArrayList<>();
@@ -99,14 +99,14 @@ public class BigTwo {
         splitCards();
     }
 
-    public boolean checkFinish(){
+    private boolean checkFinish(){
         return listPlayers.size() == 1;
     }
-    public boolean checkWin(Player player){
+    private boolean checkWin(Player player){
         return player.getCardsAvailable().size() == 0;
     }
 
-    public void generateAllCard(){
+    private void generateAllCard(){
         for(int i = 0; i < symbolRank.size(); i++){
             for(int j = 0; j < shapeRank.size(); j++){
 
@@ -121,7 +121,7 @@ public class BigTwo {
         }
     }
 
-    public void splitCards(){
+    private void splitCards(){
 
         // Main
         for(int i = 0; i < players; i++){
@@ -189,7 +189,7 @@ public class BigTwo {
     }
 
     // Return the ID of the winner
-    public int checkInstantWin(){
+    private int checkInstantWin(){
         for(int i = 0; i < listPlayers.size(); i++){
             int[] symbolsPlayerCards = new int[symbolRank.size()];
             boolean hasThreeSpade = false;
@@ -276,7 +276,7 @@ public class BigTwo {
         return -1;
     }
 
-    public void printCards(Player player){
+    private void printCards(Player player){
         ArrayList<Card> playerCards = player.getCardsAvailable();
 
         System.out.println("Cards: ");
@@ -292,7 +292,7 @@ public class BigTwo {
         System.out.println();
     }
 
-    public boolean allSameSymbol(ArrayList<Card> checkCards){
+    private boolean allSameSymbol(ArrayList<Card> checkCards){
         if(checkCards.size() == 0 || checkCards.size() == 1){
             return true;
         }
@@ -305,7 +305,7 @@ public class BigTwo {
         return true;
     }
 
-    public String checkStraight(ArrayList<Card> checkCards){
+    private String checkStraight(ArrayList<Card> checkCards){
         if(checkCards.size() >= 3){  
             String initCardSymbol = checkCards.get(0).getSymbol();
             int indexInit = symbolRank.indexOf(initCardSymbol);
@@ -329,7 +329,7 @@ public class BigTwo {
         return "NONE";
     }
 
-    public String checkSmackDown(ArrayList<Card> checkCards){
+    private String checkSmackDown(ArrayList<Card> checkCards){
         if(checkCards.size() >= 6 && checkCards.size()%2==0){
             int numPairs = 0;
             boolean isContinuous = true;
@@ -364,7 +364,7 @@ public class BigTwo {
         return "NONE";
     }
 
-    public String stateOfCards(ArrayList<Card> playedCards){
+    private String stateOfCards(ArrayList<Card> playedCards){
         
         // Check all the cards have the same symbol
         if(allSameSymbol(playedCards)){
@@ -405,7 +405,7 @@ public class BigTwo {
         return "NONE";
     }
 
-    public ArrayList<Card> findSameSymbol(ArrayList<Card> deck, int lengthCard){
+    private ArrayList<Card> findSameSymbol(ArrayList<Card> deck, int lengthCard){
         for(int i = 0; i < (deck.size() - lengthCard + 1); i += 1){
             ArrayList<Card> multipleCards = new ArrayList<>();
             for(int j = i; j < i + lengthCard; j++){
@@ -424,7 +424,7 @@ public class BigTwo {
         return new ArrayList<>();
     }
 
-    public ArrayList<Card> findStraightPairs(ArrayList<Card> deck, int lengthCard, int nPairs){
+    private ArrayList<Card> findStraightPairs(ArrayList<Card> deck, int lengthCard, int nPairs){
         ArrayList<Card> result = new ArrayList<>();
 
         int[] summaryBotCards = new int[MAX_CARDS];
@@ -575,7 +575,7 @@ public class BigTwo {
         return new ArrayList<>();
     }
 
-    public ArrayList<Card> botsPlayed(ArrayList<Card> botCards, int botID){    
+    private ArrayList<Card> botsPlayed(ArrayList<Card> botCards, int botID){    
         ArrayList<Card> botPlayedCards = new ArrayList<>();
         
         // ! OPTIMIZE in the future
@@ -813,7 +813,7 @@ public class BigTwo {
     }
 
     // * NOTE: check valid before use this function
-    public int compareToPrevCards(ArrayList<Card> checkCards){
+    private int compareToPrevCards(ArrayList<Card> checkCards){
         // ! BUG: 0003
         // ! Cannot check by sum of all values
         // ! -> Check last cards of the deck
@@ -835,7 +835,7 @@ public class BigTwo {
         return checkCards.get(checkCards.size()-1).compareTo(previousPlayedCard.get(previousPlayedCard.size()-1));
     }
 
-    public boolean checkValid(ArrayList<Card> cardsPlayed, String playerCardsState){
+    private boolean checkValid(ArrayList<Card> cardsPlayed, String playerCardsState){
         // ! BUG: Have to check if it's the first play, player cards must have the min
         boolean checkSmacking = false;
         
@@ -910,7 +910,7 @@ public class BigTwo {
         playMin);
     }
 
-    public void tempMain() throws InterruptedException{
+    private void tempMain() throws InterruptedException{
         // ! Optimize purposes
         // ! DEBUG Performance
         // long start1 = System.nanoTime();
@@ -932,7 +932,7 @@ public class BigTwo {
                 printCards(listPlayers.get(winner));
                 return;
             }
-            
+
             // Main flow of a round
             while(!(checkFinish())){
                 Player currentPlayer = listPlayers.get(currentTurn);
