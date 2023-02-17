@@ -120,11 +120,22 @@ public class BigTwo {
     public void splitCards(){
 
         // Main
+        int min = 100;
+
         for(int i = 0; i < players; i++){
             ArrayList<Card> playerCards = new ArrayList<>();
             for(int j = 0; j < MAX_CARDS; j++){
                 int randomIndex = (int)(Math.random() *cards.size());
                 Card card = cards.get(randomIndex);
+
+                // If the card is the 3 spade (smallest card)
+                // so we can get the first player
+                // If there is no 3 spade get the smallest card
+                if(card.getValue() < min){
+                    min = card.getValue();
+                    currentTurn = i;
+                }
+
                 cards.remove(randomIndex);
                 playerCards.add(card);
             }
@@ -455,12 +466,17 @@ public class BigTwo {
                     // Get the straight in Card form
 
                     String symbolStraight = symbolRank.get(i);
-                    String prevStartSymbol = previousPlayedCard.get(0).getSymbol();
 
-                    // Have to check if the initial of card is greater than prev deck
-                    // It's smaller
-                    if(i < symbolRank.indexOf(prevStartSymbol)){
-                        continue;
+                    if(previousPlayedCard.size() != 0){
+                        String prevStartSymbol = previousPlayedCard.get(0).getSymbol();
+
+                        // Have to check if the initial of card is greater than prev deck
+                        // It's smaller
+                        if(count == lengthCard){
+                            if(i < symbolRank.indexOf(prevStartSymbol)){
+                                continue;
+                            }
+                        } 
                     }
 
                     int symbolIndex = -1;
@@ -500,7 +516,7 @@ public class BigTwo {
                         }
                     }
                     
-                    if(count == lengthCard){
+                    if(count == lengthCard && previousPlayedCard.size() != 0){
                         // Check if the last symbol is greater than the last of the prev
                         Card prevLastCard = previousPlayedCard.get(previousPlayedCard.size()-1);
                         if(result.get(result.size()-1).compareTo(prevLastCard) < 0){
@@ -568,9 +584,35 @@ public class BigTwo {
             case "ANY":
                 // If there is a straight -> play it
                 // TODO
+                int straightLen = -1;
+
+                for(int i = botCards.size()-1; i >= 3; i--){
+                    // ! BUG: if there is no prev
+                    // ! This could cause out of bounds
+                    // *FIXED
+
+                    botPlayedCards = findStraightPairs(botCards, i, 1);
+                    if(botPlayedCards.size() != 0){
+                        straightLen = i;
+                        break;
+                    }
+                }
+                if(straightLen != -1){
+                    currentState = "SGT_" + straightLen; 
+                    break;
+                }
 
                 // If there is cards from type TRIP to type SINGLE -> play it
                 for(int i = 3; i >= 1; i--){
+                    // Play quad instead of 2 if the cards is less than 6
+                    if(i == 2 && (botCards.size() <= 6)){
+                        botPlayedCards = findSameSymbol(botCards, 4);
+                        if(botPlayedCards.size() != 0){
+                            // Set current state
+                            currentState = "QUAD";
+                            break;
+                        }
+                    }
                     botPlayedCards = findSameSymbol(botCards, i);
                     if(botPlayedCards.size() != 0){
                         // Set current state
@@ -584,6 +626,17 @@ public class BigTwo {
             case "TRIP":
             case "QUAD":
                 botPlayedCards = findSameSymbol(botCards, cardsNeeded);
+                
+                // A quad can be smacked back by a 4-pair or 5-pair smack down
+                if(currentState.equals("QUAD")){
+                    if(botPlayedCards.size() == 0){
+                        botPlayedCards = findStraightPairs(botCards, 5, 2);
+                        if(botPlayedCards.size() == 0){
+                            botPlayedCards = findStraightPairs(botCards, 4, 2);
+                        }
+                    }
+                }
+
                 break;
 
             // Default is SGT and SMD ONLY
@@ -607,7 +660,17 @@ public class BigTwo {
                     botPlayedCards = findStraightPairs(botCards, num, 1);
 
                 } else if(state.equals("SMD")){
-                    
+                    botPlayedCards = findStraightPairs(botCards, num, 2);
+
+                    // Quad can smack back smackdown 3 pairs
+                    if(botPlayedCards.size() == 0 && num == 3){
+                        botPlayedCards = findSameSymbol(botCards, 4);
+                        if(botPlayedCards.size() != 0){
+                            // Set current state
+                            currentState = "QUAD";
+                            break;
+                        }
+                    }
                 }
 
                 break;
@@ -640,6 +703,75 @@ public class BigTwo {
         return checkCards.get(checkCards.size()-1).compareTo(previousPlayedCard.get(previousPlayedCard.size()-1));
     }
 
+    public boolean checkValid(ArrayList<Card> cardsPlayed, String playerCardsState){
+        boolean checkSmacking = false;
+        
+        // Check if player can smack down
+        if(previousPlayedCard.size() == 1){
+            // Check if last card was a 2
+            if(previousPlayedCard.get(0).getSymbol().equals("2")){
+                // Check if player plays a smack down
+                if(playerCardsState.contains("SMD")){
+                    checkSmacking = true;
+                }
+            }
+        } else {
+            // Smack back a smack down sequence
+            if(currentState.contains("SMD")){
+                String[] stateWithNum = currentState.split("_");
+                int num = Integer.parseInt(stateWithNum[1]);
+
+                // The one with more pairs wins
+                if(playerCardsState.contains("SMD")){
+                    String[] stateWithNumPlayer = playerCardsState.split("_");
+                    int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
+
+    
+                    if(numPlayer > num){
+                        checkSmacking = true;
+                    }
+
+                // A quad can smack back a 3-pair smack down
+                } else if(playerCardsState.equals("QUAD")){
+                    if(num==3){
+                        checkSmacking = true;
+                    }
+                }
+            // Smack down a pair of 2
+            } else if(currentState.equals("PAIR")){
+                if(previousPlayedCard.get(0).getSymbol().equals("2") &&
+                    previousPlayedCard.get(1).getSymbol().equals("2")){
+
+                    // Check if a player wants to smack down pair of 2
+                    // Only valid if the smack down sequence is greater than 3 pairs
+
+                    String[] stateWithNumPlayer = playerCardsState.split("_");
+                    int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
+
+                    if((playerCardsState.contains("SMD") && numPlayer >= 4) ||
+                        playerCardsState.equals("QUAD")){
+                        checkSmacking = true;
+                    }
+                }
+            // Smack down a quad by smack down sequence >= 4
+            } else if(currentState.equals("QUAD")){
+                // Check if a player wants to smack down a quad
+                if(playerCardsState.contains("SMD")){
+                    String[] stateWithNumPlayer = playerCardsState.split("_");
+                    int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
+
+                    // Only valid if the smack down sequence is greater than 3 pairs
+                    if(numPlayer >= 4){
+                        checkSmacking = true;
+                    }
+                }
+            }
+        }
+
+        return (!playerCardsState.equals("NONE") && 
+        (currentState.equals("ANY") || playerCardsState.equals(currentState) || checkSmacking) && 
+        (compareToPrevCards(cardsPlayed) > 0) || checkSmacking);
+    }
 
     public void tempMain() throws InterruptedException{
         // ! Optimize purposes
@@ -719,29 +851,22 @@ public class BigTwo {
                     // ! than the previous card
 
                     // If the cards are a valid move 
-                    if(!stateCard.equals("NONE")){
+                    // If the cards is the same state as current state
+                    // ANY is when player can do any move
+                    if(checkValid(cardsPlayed, stateCard)){
+                        currentState = stateCard;
+                        currentPlayer.playCard(cardsPlayed);
+                        previousPlayedCard = cardsPlayed;
+                        lastPlayerPlayed = 0;
 
-                        // If the cards is the same state as current state
-                        // ANY is when player can do any move
-                        if((currentState.equals("ANY") ||
-                        stateCard.equals(currentState)) && (compareToPrevCards(cardsPlayed) > 0)){
+                        // Update the state
+                        if(currentState.equals("ANY")){
                             currentState = stateCard;
-                            currentPlayer.playCard(cardsPlayed);
-                            previousPlayedCard = cardsPlayed;
-                            lastPlayerPlayed = 0;
-
-                            // Update the state
-                            if(currentState.equals("ANY")){
-                                currentState = stateCard;
-                            }
-                        } else {
-                            // If player play different state
-                            // OR player plays lower rank than
-                            // previous cards that bot played
-                            // Play again new combination of cards
-                            continue;
                         }
                     } else {
+                        // If player play different state
+                        // OR player plays lower rank than
+                        // previous cards that bot played
                         // If it's not a valid state
                         // Play again new combination of cards
                         continue;
@@ -805,45 +930,61 @@ public class BigTwo {
         sc.close();
     }
 
-    public void run() throws InterruptedException{
+    public void run() throws InterruptedException{  
         // Main
-        //tempMain();
+        tempMain();
 
         // Get the system
         // System.getProperty("os.name")
 
         // ! DEBUGGING PURPOSES
         // *DEBUG BOTS PLAY
-        cards = new ArrayList<>();
-        generateAllCard();
+        // cards = new ArrayList<>();
+        // generateAllCard();
 
-        previousPlayedCard.add(cards.get(16));
-        previousPlayedCard.add(cards.get(20));
-        previousPlayedCard.add(cards.get(26));
+        // previousPlayedCard.add(cards.get(0));
+        // previousPlayedCard.add(cards.get(1));
 
-        currentState = stateOfCards(previousPlayedCard);
+        // previousPlayedCard.add(cards.get(4));
+        // previousPlayedCard.add(cards.get(5));
 
-        System.out.println(previousPlayedCard);
+        // previousPlayedCard.add(cards.get(10));
+        // previousPlayedCard.add(cards.get(11));
 
-        Player bot = listPlayers.get(0);
-        ArrayList<Card> lCards = bot.getCardsAvailable();
+        // currentState = stateOfCards(previousPlayedCard);
 
-        // int last = lCards.size()-1;
+        // System.out.println(previousPlayedCard);
 
-        // lCards.remove(last);
-        // lCards.remove(last-1);
-        // lCards.remove(last-2);
-        // lCards.remove(last-3);
+        // Player bot = listPlayers.get(0);
+        // ArrayList<Card> lCards = bot.getCardsAvailable();
 
-        // lCards.add(cards.get(17));
-        // lCards.add(cards.get(21));
-        // lCards.add(cards.get(25));
-        // lCards.add(cards.get(27));
+        // // int last = lCards.size()-1;
+
+        // lCards.remove(0);
+        // lCards.remove(0);
+        // lCards.remove(0);
+        // lCards.remove(0);
+        // lCards.remove(0);
+        // lCards.remove(0);
+        // lCards.remove(0);
+        // lCards.remove(0);
+
+        // lCards.add(cards.get(2));
+        // lCards.add(cards.get(3));
+
+        // lCards.add(cards.get(6));
+        // lCards.add(cards.get(7));
+
+        // lCards.add(cards.get(8));
+        // lCards.add(cards.get(9));
+
+        // lCards.add(cards.get(12));
+        // lCards.add(cards.get(13));
 
         // lCards.sort(((o1, o2) -> o1.compareTo(o2)));
 
-        printCards(bot);
-        printCards(new Player(botsPlayed(lCards, 0), -1));
+        // printCards(bot);
+        // printCards(new Player(botsPlayed(lCards, 0), -1));
 
         // *DEBUG PRINT RANDOM CARDS
         // reset();
