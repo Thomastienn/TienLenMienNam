@@ -51,7 +51,6 @@ public class BigTwo {
         this.symbolRank = new ArrayList<>();
         this.shapeRank = new ArrayList<>();
         this.sc = new Scanner(System.in);
-        this.cards = new ArrayList<>();
         this.currentState = "ANY";
         this.lastPlayerPlayed = 0;
         this.players = players;
@@ -80,7 +79,7 @@ public class BigTwo {
         shapeRank.add("diamond");
         shapeRank.add("heart");
 
-        // {"NONE", "SINGLE", "PAIR", "TRIP", "QUAD"}
+        // NONE, SINGLE, PAIR, TRIP, QUAD
         // ! DO NOT CHANGE THE ORDER
         allSymbolStates.add("NONE");
         allSymbolStates.add("SINGLE");
@@ -91,6 +90,7 @@ public class BigTwo {
 
     public void reset(){
         this.listPlayers = new ArrayList<>();
+        this.cards = new ArrayList<>();
         generateAllCard();
         splitCards();
     }
@@ -584,6 +584,16 @@ public class BigTwo {
         // currentState cannot be NONE
         switch(currentState){
             case "ANY":
+                // ! BUG:
+                // ! If it has 3 spade and this is the first round
+                // ! then it has to play cards that 
+                // ! has 3 spade in it 
+                if(round == 0 && 
+                    previousPlayedCard.size() == 0 &&
+                    botCards.get(0).getValue() == 0){
+                    // TODO
+                }
+
                 // If there is a smack down and 
                 // You almost run out of cards
                 // -> Play it
@@ -799,22 +809,26 @@ public class BigTwo {
         // long end1 = System.nanoTime(); 
         // System.out.println("Elapsed Time in nano seconds: "+ (end1-start1));
 
-        // Init
-        reset();
-
-        // Instant-win winner
-        int winner = checkInstantWin();
-        if(winner != -1){
-            System.out.println("Player " + winner + " wins!");
-            printCards(listPlayers.get(winner));
-            return;
-        }
         
         // A round
         // TODO: Add more rounds instead of only 1
-
+        
         String userContinue;
+
+        // Many rounds 
         do {
+            // Init
+            reset();
+
+            // Instant-win winner
+            int winner = checkInstantWin();
+            if(winner != -1){
+                System.out.println("Player " + winner + " wins!");
+                printCards(listPlayers.get(winner));
+                return;
+            }
+
+            // Main flow of a round
             while(!(checkFinish())){
                 Player currentPlayer = listPlayers.get(currentTurn);
                 ArrayList<Card> currentPlayerCards = currentPlayer.getCardsAvailable();
@@ -845,6 +859,7 @@ public class BigTwo {
                         String indexCardStr;
 
                         // Select cards to play
+                        // TODO: Delete cards if user decide change strategy
                         do {
                             System.out.print("Choose card: ");
                             indexCardStr = sc.nextLine();
@@ -870,6 +885,7 @@ public class BigTwo {
                         // ! BUG: 0002 
                         // ! Haven't check if the value of the cards is larger
                         // ! than the previous card
+                        // *FIXED
 
                         // If the cards are a valid move 
                         // If the cards is the same state as current state
