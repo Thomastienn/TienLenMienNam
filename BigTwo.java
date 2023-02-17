@@ -24,6 +24,7 @@ public class BigTwo {
     // round: The number of rounds played
     // lastPlayerPlayed: stores the ID of the last played player
     // allSymboolStates = {"NONE", "SINGLE", "PAIR", "TRIP", "QUAD"}
+    // min: the smallest card in the table
 
     // ** 
 
@@ -40,11 +41,13 @@ public class BigTwo {
     private int players;
     private Scanner sc;
     private int round;
+    private Card min;
 
     public BigTwo(int players){
         // Set players in range 2 - 4 players
         players = Math.min(Math.max(players, 2), 4);
         
+        this.min = new Card("", "", 55, false);
         this.previousPlayedCard = new ArrayList<>();
         this.allSymbolStates = new ArrayList<>();
         this.listPlayers = new ArrayList<>();
@@ -120,8 +123,6 @@ public class BigTwo {
     public void splitCards(){
 
         // Main
-        int min = 100;
-
         for(int i = 0; i < players; i++){
             ArrayList<Card> playerCards = new ArrayList<>();
             for(int j = 0; j < MAX_CARDS; j++){
@@ -133,8 +134,8 @@ public class BigTwo {
                     // If the card is the 3 spade (smallest card)
                     // so we can get the first player
                     // If there is no 3 spade get the smallest card
-                    if(card.getValue() < min){
-                        min = card.getValue();
+                    if(card.getValue() < min.getValue()){
+                        min = card;
                         currentTurn = i;
                     }
                 }
@@ -439,7 +440,7 @@ public class BigTwo {
         // Ex: 3 4 5 6 7 8 9 10 J Q K A 2 -> length = MAX_CARDS
         //     0 2 1 1 0 0 0 2  3 3 0 1 2 -> Must total up to 13
 
-        for(int i = 0; i < summaryBotCards.length-lengthCard; i++){
+        for(int i = 0; i < MAX_CARDS-lengthCard; i++){
             int symbolCount = summaryBotCards[i];
 
             // Maybe the start of the straight
@@ -588,10 +589,63 @@ public class BigTwo {
                 // ! If it has 3 spade and this is the first round
                 // ! then it has to play cards that 
                 // ! has 3 spade in it 
+                // ! If there is no 3 spade in deck
+                // ! -> The cards played must include the smallest card
+                // *FIXED
+
                 if(round == 0 && 
                     previousPlayedCard.size() == 0 &&
-                    botCards.get(0).getValue() == 0){
-                    // TODO
+                    botCards.get(0).getValue() == min.getValue()){
+
+                    // First is find if there is straight with the min
+                    int lenStraight = -1;
+                    for(int i = botCards.size()-1; i >= 3; i--){
+                        botPlayedCards = findStraightPairs(botCards, i, 1);
+                        boolean valid = false;
+
+                        if(botPlayedCards.size() != 0){
+                            lenStraight = i;
+                            valid = true;
+                        }
+
+                        if(!botPlayedCards.contains(min)){
+                            botPlayedCards = new ArrayList<>();
+                            lenStraight = -1;
+                        } else {
+                            // If there is a straight include min
+                            if(valid){
+                                break;
+                            }
+                        }
+                    }
+                    if(lenStraight != -1){
+                        currentState = "SGT_" + lenStraight;
+                        break;
+                    }
+
+                    // !BUG
+                    // *FIXED
+
+                    // Next is to check from TRIP to SINGLE
+                    for(int i = 3; i >= 1; i--){
+                        botPlayedCards = findSameSymbol(botCards, i);
+                        boolean valid = false;
+                        if(botPlayedCards.size() != 0){
+                            // Set current state
+                            currentState = allSymbolStates.get(i);
+                            valid = true;
+                        }
+                        if(!botPlayedCards.contains(min)){
+                            botPlayedCards = new ArrayList<>();
+                        } else {
+                            // If they are all symbol and include min
+                            if(valid){
+                                break;
+                            }
+                        }
+                    }
+
+                    break;
                 }
 
                 // If there is a smack down and 
@@ -772,6 +826,9 @@ public class BigTwo {
         // Negative: Less than prev
 
         if(currentState.equals("ANY")){
+            return 1;
+        }
+        if(previousPlayedCard.size() == 0){
             return 1;
         }
         
@@ -1049,26 +1106,22 @@ public class BigTwo {
         // generateAllCard();
         // System.out.println(cards + " " + cards.size());
         // *DEBUG BOTS PLAY
+        // System.out.println(round);
         // cards = new ArrayList<>();
         // generateAllCard();
 
         // previousPlayedCard.add(cards.get(0));
         // previousPlayedCard.add(cards.get(1));
 
-        // previousPlayedCard.add(cards.get(4));
-        // previousPlayedCard.add(cards.get(5));
-
-        // previousPlayedCard.add(cards.get(10));
-        // previousPlayedCard.add(cards.get(11));
-
-        // currentState = stateOfCards(previousPlayedCard);
+        //currentState = stateOfCards(previousPlayedCard);
+        // currentState = "ANY";
 
         // System.out.println(previousPlayedCard);
 
         // Player bot = listPlayers.get(0);
         // ArrayList<Card> lCards = bot.getCardsAvailable();
 
-        // // int last = lCards.size()-1;
+        // int last = lCards.size()-1;
 
         // lCards.remove(0);
         // lCards.remove(0);
