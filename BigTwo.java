@@ -128,12 +128,15 @@ public class BigTwo {
                 int randomIndex = (int)(Math.random() *cards.size());
                 Card card = cards.get(randomIndex);
 
-                // If the card is the 3 spade (smallest card)
-                // so we can get the first player
-                // If there is no 3 spade get the smallest card
-                if(card.getValue() < min){
-                    min = card.getValue();
-                    currentTurn = i;
+                // If it's the first round
+                if(round == 0){
+                    // If the card is the 3 spade (smallest card)
+                    // so we can get the first player
+                    // If there is no 3 spade get the smallest card
+                    if(card.getValue() < min){
+                        min = card.getValue();
+                        currentTurn = i;
+                    }
                 }
 
                 cards.remove(randomIndex);
@@ -577,13 +580,28 @@ public class BigTwo {
         int cardsNeeded = allSymbolStates.indexOf(currentState);
         // ! END
 
-
-        // TODO: continue doing the logic
         // currentState cannot be NONE
         switch(currentState){
             case "ANY":
+                // If there is a smack down and 
+                // You almost run out of cards
+                // -> Play it
+                int smackDown = -1;
+                for(int i = 4; i >= 3; i++){
+                    botPlayedCards = findStraightPairs(botCards, i, 2);
+                    
+                    // If it has smack down and a single last card
+                    if(botPlayedCards.size() != 0 && botCards.size() <= i*2+1){
+                        smackDown = i;   
+                        break;                     
+                    }
+                }
+                if(smackDown != -1){
+                    currentState = "SMD_" + smackDown;
+                    break;
+                }
+
                 // If there is a straight -> play it
-                // TODO
                 int straightLen = -1;
 
                 for(int i = botCards.size()-1; i >= 3; i--){
@@ -627,13 +645,10 @@ public class BigTwo {
             case "QUAD":
                 botPlayedCards = findSameSymbol(botCards, cardsNeeded);
                 
-                // A quad can be smacked back by a 4-pair or 5-pair smack down
+                // A quad can be smacked back by a 4-pair
                 if(currentState.equals("QUAD")){
                     if(botPlayedCards.size() == 0){
-                        botPlayedCards = findStraightPairs(botCards, 5, 2);
-                        if(botPlayedCards.size() == 0){
-                            botPlayedCards = findStraightPairs(botCards, 4, 2);
-                        }
+                        botPlayedCards = findStraightPairs(botCards, 4, 2);
                     }
                 }
 
@@ -669,6 +684,9 @@ public class BigTwo {
                             // Set current state
                             currentState = "QUAD";
                             break;
+                        // Can still smack back 3 pairs by 4-pair smack down
+                        } else {
+                            botPlayedCards = findStraightPairs(botCards, 4, 2);
                         }
                     }
                 }
@@ -926,6 +944,7 @@ public class BigTwo {
         // Last player -> lose
         Player lastPlayer = listPlayers.get(0);
         System.out.println("Player " + lastPlayer.getId() + " loses!");
+        round += 1;
 
         sc.close();
     }
