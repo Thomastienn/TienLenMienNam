@@ -642,6 +642,16 @@ public class BigTwo {
                             break;
                         }
                     }
+
+                    // If there is less than 3 cards and state is ANY
+                    // Then play the largest card
+                    // So higher chance that the bot wins
+                    if(i == 1 && (botCards.size() <= 3)){
+                        botPlayedCards.add(botCards.get(botCards.size()-1));
+                        currentState = "SINGLE";
+                        break;
+                    }
+
                     botPlayedCards = findSameSymbol(botCards, i);
                     if(botPlayedCards.size() != 0){
                         // Set current state
@@ -839,7 +849,7 @@ public class BigTwo {
 
         
         // A round
-        // TODO: Add more rounds instead of only 1
+        // Added more rounds instead of only 1
         
         String userContinue;
 
@@ -898,10 +908,12 @@ public class BigTwo {
                             
                             int indexCard = Integer.parseInt(indexCardStr);
 
-                            // TODO: Delete cards if user decide change strategy
                             try {
                                 Card played = currentPlayerCards.get(indexCard);
                                 int idx = cardsPlayed.indexOf(played); 
+
+                                // Delete cards if it already existed in the played cards
+                                // If it's not existed then add to the play cards
                                 if(idx < 0){
                                     cardsPlayed.add(played);
                                 } else {
