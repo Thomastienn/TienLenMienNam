@@ -47,14 +47,10 @@ public class BigTwo {
         // Set players in range 2 - 4 players
         players = Math.min(Math.max(players, 2), 4);
         
-        this.previousPlayedCard = new ArrayList<>();
         this.allSymbolStates = new ArrayList<>();
-        this.listPlayers = new ArrayList<>();
         this.symbolRank = new ArrayList<>();
         this.shapeRank = new ArrayList<>();
         this.sc = new Scanner(System.in);
-        this.currentState = "ANY";
-        this.lastPlayerPlayed = 0;
         this.players = players;
         this.currentTurn = 0;
         this.round = 0;
@@ -92,8 +88,11 @@ public class BigTwo {
 
     private void reset(){
         this.min = new Card("", "", 55, false);
+        this.previousPlayedCard = new ArrayList<>();
         this.listPlayers = new ArrayList<>();
         this.cards = new ArrayList<>();
+        this.lastPlayerPlayed = 0;
+        this.currentState = "ANY";
 
         generateAllCard();
         splitCards();
@@ -218,8 +217,13 @@ public class BigTwo {
             // System.out.println();
 
             // Check instant win
-            // TODO: Add case first round and other rounds
-
+            // Add case first round and other rounds
+            if(round == 0 && hasThreeSpade){
+                ArrayList<Card> threePairSMD = findStraightPairs(cards, 3, 2);
+                if(threePairSMD.contains(listPlayers.get(i).getCardsAvailable().get(0))){
+                    return i;
+                }
+            }
 
             // Check quad 2 and quad 3
             // Quad 3 only valid if it's the first round
@@ -735,7 +739,6 @@ public class BigTwo {
                     }
                 }
 
-                // TODO
                 // Can smack down a 2 with smack down or quad
                 boolean singleTwo = (currentState.equals("SINGLE") &&
                 previousPlayedCard.get(0).getSymbol().equals("2"));
@@ -1098,7 +1101,7 @@ public class BigTwo {
 
     public void run() throws InterruptedException{  
         // Main
-        tempMain();
+        // tempMain();
 
         // Get the system
         // System.getProperty("os.name")
@@ -1234,6 +1237,18 @@ public class BigTwo {
         //         System.out.println("After " + times + " times");
         //         return;
         //     }
+        // }
+        // int times = 0;
+        // while(true){
+        //     int winner = checkInstantWin();
+        //     if(winner != -1){
+        //         System.out.println("Player " + winner + " wins!");
+        //         printCards(listPlayers.get(winner));
+        //         System.out.println(times);
+        //         return;
+        //     }
+        //     times++;
+        //     reset();
         // }
 
         // *DEBUG PRINT PLAYERS CARDS
