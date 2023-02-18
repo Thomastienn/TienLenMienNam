@@ -735,7 +735,10 @@ public class BigTwo {
                 // Then play the largest card
                 // So higher chance that the bot wins
                 if(currentState.equals("SINGLE") && (botCards.size() <= 3)){
-                    botPlayedCards.add(botCards.get(botCards.size()-1));
+                    Card playCard = botCards.get(botCards.size()-1);
+                    if(playCard.compareTo(previousPlayedCard.get(0)) > 0){
+                        botPlayedCards.add(playCard);
+                    }
                     break;
                 }
 
@@ -917,8 +920,12 @@ public class BigTwo {
             }
         }
 
-        boolean playMin = (previousPlayedCard.size()==0 && round == 0 &&
-                            cardsPlayed.contains(min));
+        boolean playMin = true;
+        if(previousPlayedCard.size()==0 && round == 0){
+            if(!cardsPlayed.contains(min)){
+                playMin = false;
+            }
+        }
     
         return (!playerCardsState.equals("NONE") && 
         ((currentState.equals("ANY")) || playerCardsState.equals(currentState) || checkSmacking) && 
@@ -993,9 +1000,8 @@ public class BigTwo {
                     cardBtn.setContentAreaFilled(false); 
                     cardBtn.setActionCommand(Integer.toString(i));
                     cardBtn.addActionListener(e -> {
-                            System.out.println(cardBtn.getActionCommand());   
-                        }
-                    );
+                        System.out.println(cardBtn.getActionCommand());   
+                    });
 
                     playerCards.add(cardBtn);
                 }
@@ -1017,7 +1023,7 @@ public class BigTwo {
         frame.setVisible(true);
     }
 
-    private void tempMain() throws InterruptedException{
+    private void playConsole() throws InterruptedException{
         // ! Optimize purposes
         // ! DEBUG Performance
         // long start1 = System.nanoTime();
@@ -1059,6 +1065,8 @@ public class BigTwo {
                     // Play the card OR Pass the turn
                     System.out.println("PREV: " + previousPlayedCard);
                     System.out.println(currentState);
+                    System.out.println("MIN: " + min);
+
                     printCards(listPlayers.get(0));
 
                     System.out.print("Play or Skip (P/S): ");
@@ -1205,7 +1213,7 @@ public class BigTwo {
 
     public void run() throws InterruptedException{  
         // Main
-        // tempMain();
+        playConsole();
 
         // Initialize GUI
         // cards = new ArrayList<>();
@@ -1215,7 +1223,7 @@ public class BigTwo {
         // previousPlayedCard.add(cards.get(22));
         // previousPlayedCard.add(cards.get(23));
         // previousPlayedCard.add(cards.get(24));
-        initGUI();
+        //initGUI();
 
         // Get the system
         // System.getProperty("os.name")
