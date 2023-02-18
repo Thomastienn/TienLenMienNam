@@ -2,8 +2,13 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.*;
-import java.awt.*;
+import javax.swing.event.MouseInputAdapter;
 
+import org.w3c.dom.events.MouseEvent;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
 
 public class BigTwo {
@@ -842,6 +847,10 @@ public class BigTwo {
         return checkCards.get(checkCards.size()-1).compareTo(previousPlayedCard.get(previousPlayedCard.size()-1));
     }
 
+    private String cardToDir(Card card){
+        return System.getProperty("user.dir").replace("\\", "/") + "/img/" + card.toString() + ".png";
+    }
+
     private boolean checkValid(ArrayList<Card> cardsPlayed, String playerCardsState){
         // ! BUG: Have to check if it's the first play, player cards must have the min
         boolean checkSmacking = false;
@@ -918,14 +927,15 @@ public class BigTwo {
     }
 
     private void initGUI(){
-        String currentWorkingDir = System.getProperty("user.dir").replace("\\", "/");
-        String imgDir = currentWorkingDir + "/img";
+        // Directory
+        final String currentWorkingDir = System.getProperty("user.dir").replace("\\", "/");
+        final String imgDir = currentWorkingDir + "/img";
         ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
 
-        Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-
-        int width = (int) size.getWidth();
-        int height = (int) size.getHeight();
+        // Get screen size
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int width = device.getDisplayMode().getWidth();
+        int height = device.getDisplayMode().getHeight()-100;
 
         JFrame frame = new JFrame("Big Two");
 
@@ -943,10 +953,12 @@ public class BigTwo {
         JPanel secondLine = new JPanel(new BorderLayout());
         JLabel player2 = new JLabel(backIcon);
         JLabel player3 = new JLabel(backIcon);
-        JPanel prevCards = new JPanel(new GridLayout(0, MAX_CARDS));
+        JPanel prevCards = new JPanel(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
 
-        for(int i = 0; i < MAX_CARDS; i++){
-            JLabel cardPrev = new JLabel(backIcon);
+        // Load previous card on the deck
+        for(Card card: previousPlayedCard){
+            ImageIcon cardImg = new ImageIcon(cardToDir(card));
+            JLabel cardPrev = new JLabel(cardImg);
             prevCards.add(cardPrev);
         }
         prevCards.setBackground(Color.GREEN);
@@ -967,9 +979,27 @@ public class BigTwo {
         btns.add(playBtn);
         btns.add(skipBtn);
         
-        for(int i = 0; i < MAX_CARDS; i++){
-            JLabel player4 = new JLabel(backIcon);
-            playerCards.add(player4);
+        // Load main player cards
+        for(Player player: listPlayers){
+            if(player.getId() == 0){
+                for(int i = 0; i< player.getCardsAvailable().size(); i++){
+                    Card card = player.getCardsAvailable().get(i);
+
+                    ImageIcon cardImg = new ImageIcon(cardToDir(card));
+                    JButton cardBtn = new JButton();
+
+                    cardBtn.setIcon(cardImg);
+                    cardBtn.setBorderPainted(false); 
+                    cardBtn.setContentAreaFilled(false); 
+                    cardBtn.setActionCommand(Integer.toString(i));
+                    cardBtn.addActionListener(e -> {
+                            System.out.println(cardBtn.getActionCommand());   
+                        }
+                    );
+
+                    playerCards.add(cardBtn);
+                }
+            }
         }
         playerCards.setBackground(Color.BLUE);
 
@@ -1178,6 +1208,13 @@ public class BigTwo {
         // tempMain();
 
         // Initialize GUI
+        // cards = new ArrayList<>();
+        // generateAllCard();
+        // previousPlayedCard.add(cards.get(20));
+        // previousPlayedCard.add(cards.get(21));
+        // previousPlayedCard.add(cards.get(22));
+        // previousPlayedCard.add(cards.get(23));
+        // previousPlayedCard.add(cards.get(24));
         initGUI();
 
         // Get the system
