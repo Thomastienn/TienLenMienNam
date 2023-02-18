@@ -1,5 +1,9 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import javax.swing.*;
+import java.awt.*;
+
 import java.util.Arrays;
 
 public class BigTwo {
@@ -913,6 +917,77 @@ public class BigTwo {
         playMin);
     }
 
+    private void initGUI(){
+        String currentWorkingDir = System.getProperty("user.dir").replace("\\", "/");
+        String imgDir = currentWorkingDir + "/img";
+        ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
+
+        Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+
+        int width = (int) size.getWidth();
+        int height = (int) size.getHeight();
+
+        JFrame frame = new JFrame("Big Two");
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        //mainPanel.setBackground(Color.RED);
+
+        // First line
+        JPanel firstLine = new JPanel();
+        JLabel player1 = new JLabel(backIcon);
+
+        firstLine.add(player1);
+        firstLine.setBackground(Color.RED);
+
+        // Second line
+        JPanel secondLine = new JPanel(new BorderLayout());
+        JLabel player2 = new JLabel(backIcon);
+        JLabel player3 = new JLabel(backIcon);
+        JPanel prevCards = new JPanel();
+
+        for(int i = 0; i < MAX_CARDS; i++){
+            JLabel cardPrev = new JLabel(backIcon);
+            prevCards.add(cardPrev);
+        }
+
+        prevCards.setBackground(Color.GREEN);
+
+        secondLine.add(player2, BorderLayout.WEST);
+        secondLine.add(prevCards, BorderLayout.CENTER);
+        secondLine.add(player3, BorderLayout.EAST);
+        secondLine.setBackground(Color.YELLOW);
+
+        // Third line
+        JPanel thirdLine = new JPanel(new BorderLayout());
+        JPanel btns = new JPanel();
+        JPanel playerCards = new JPanel();
+
+        JButton playBtn = new JButton("Play");
+        JButton skipBtn = new JButton("Skip");
+        
+        btns.add(playBtn);
+        btns.add(skipBtn);
+        
+        for(int i = 0; i < MAX_CARDS; i++){
+            JLabel player4 = new JLabel(backIcon);
+            playerCards.add(player4);
+        }
+        playerCards.setBackground(Color.BLUE);
+
+        thirdLine.add(playerCards, BorderLayout.SOUTH);
+        thirdLine.add(btns, BorderLayout.NORTH);
+
+        // Add the the main
+        mainPanel.add(firstLine, BorderLayout.NORTH);
+        mainPanel.add(secondLine, BorderLayout.CENTER);
+        mainPanel.add(thirdLine, BorderLayout.SOUTH);
+
+        frame.add(mainPanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(width, height);
+        frame.setVisible(true);
+    }
+
     private void tempMain() throws InterruptedException{
         // ! Optimize purposes
         // ! DEBUG Performance
@@ -1102,6 +1177,9 @@ public class BigTwo {
     public void run() throws InterruptedException{  
         // Main
         // tempMain();
+
+        // Initialize GUI
+        initGUI();
 
         // Get the system
         // System.getProperty("os.name")
