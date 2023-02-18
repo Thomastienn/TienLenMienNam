@@ -943,13 +943,12 @@ public class BigTwo {
         JPanel secondLine = new JPanel(new BorderLayout());
         JLabel player2 = new JLabel(backIcon);
         JLabel player3 = new JLabel(backIcon);
-        JPanel prevCards = new JPanel();
+        JPanel prevCards = new JPanel(new GridLayout(0, MAX_CARDS));
 
         for(int i = 0; i < MAX_CARDS; i++){
             JLabel cardPrev = new JLabel(backIcon);
             prevCards.add(cardPrev);
         }
-
         prevCards.setBackground(Color.GREEN);
 
         secondLine.add(player2, BorderLayout.WEST);
