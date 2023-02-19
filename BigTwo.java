@@ -961,7 +961,7 @@ public class BigTwo {
         for(Card card: previousPlayedCard){
             ImageIcon cardImg = new ImageIcon(cardToDir(card));
             JLabel cardPrev = new JLabel(cardImg);
-
+            
             prevCards.add(cardPrev);
         }
         prevCards.revalidate();
@@ -1023,6 +1023,8 @@ public class BigTwo {
         }
         secondLine.setBackground(Color.YELLOW);
 
+        playBtn.setBackground(Color.GREEN);
+        playBtn.setActionCommand("0");
         playBtn.setPreferredSize(new Dimension(200,70));
         skipBtn.setPreferredSize(new Dimension(200,70));
 
@@ -1150,11 +1152,6 @@ public class BigTwo {
                             currentPlayer.playCard(cardsPlayed);
                             previousPlayedCard = cardsPlayed;
                             lastPlayerPlayed = 0;
-
-                            // Update the state
-                            if(currentState.equals("ANY")){
-                                currentState = stateCard;
-                            }
                         } else {
                             // If player play different state
                             // OR player plays lower rank than
@@ -1236,7 +1233,7 @@ public class BigTwo {
         sc.close();
     }
 
-    private void playGUI(){
+    private void playGUI() throws InterruptedException{
         initGUI();
 
         int winner = checkInstantWin();
@@ -1247,13 +1244,13 @@ public class BigTwo {
             return; 
         }
         
-        currentTurn = 0;
-        Player currentPlayer = listPlayers.get(currentTurn);
-        ArrayList<Card> playerCards = currentPlayer.getCardsAvailable();
-
+        //currentTurn = 0;
+        
         playBtn.addActionListener(e -> {
             selectedCards.sort(((o1, o2) -> o1.compareTo(o2)));
             String state = stateOfCards(selectedCards);
+
+            Player currentPlayer = listPlayers.get(0);
 
             if(checkValid(selectedCards, state)){
                 // Show on prev deck
@@ -1261,17 +1258,118 @@ public class BigTwo {
                 loadPrevCard();
 
                 // Remove from player cards
-                for(Card card: selectedCards){
-                    playerCards.remove(card);
-                }
+                currentPlayer.playCard(selectedCards);
 
                 // Update UI of player cards
                 loadPlayerCards();
 
+                currentState = state;
+                lastPlayerPlayed = 0;
                 frame.repaint();
                 selectedCards = new ArrayList<>();
+                currentTurn = (currentTurn+1)%(listPlayers.size());
+
+                // Notify that a user has made a move
+                playBtn.setActionCommand("1");
             }
         });
+
+        skipBtn.addActionListener(e -> {
+            currentTurn = (currentTurn+1)%(listPlayers.size());
+            // Notify that a user has made a move
+            playBtn.setActionCommand("1");
+        });
+
+
+        while(!checkFinish()){
+            System.out.println(currentTurn);
+            Player curPlayer = listPlayers.get(currentTurn);
+
+            //When everyone passes the turn
+            if(curPlayer.getId() == lastPlayerPlayed){
+                currentState = "ANY"; 
+            }
+
+            if(curPlayer.getId() == 0){
+                playBtn.setEnabled(true);
+                playBtn.setBackground(Color.GREEN);
+
+                System.out.println("ME");
+
+                // Wait until user make a move
+                while(true){
+                    System.out.println("THREAD RUN");
+                    if(Integer.parseInt(playBtn.getActionCommand()) != 0){
+                        System.out.println("PLAY");
+                        playBtn.setActionCommand("0");
+                        break;
+                    }
+                    Thread.sleep(1000);
+                }
+
+            } else {
+                System.out.println("BOT");
+                playBtn.setEnabled(false);
+                playBtn.setBackground(Color.GRAY);
+
+                Thread.sleep(3000);
+                curPlayer.playCard(botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId()));
+                currentTurn = (currentTurn+1)%(listPlayers.size());
+                
+
+                // Update UI
+                loadPrevCard();
+                System.out.println("UPDATED");
+            }
+            System.out.println("RUNNING");
+
+            // If current player plays all the cards
+            if(checkWin(curPlayer)){
+                if(curPlayer.getId() == 0){
+                    System.out.println("You win!");
+                    disableBtns();
+                } else {
+                    int place = ((players-listPlayers.size())+1);
+                    String postFix = "";
+                    
+                    switch(place){
+                        case 1:
+                        postFix = "st";
+                        break;
+                        case 2:
+                        postFix = "nd";
+                            break;
+                        case 3:
+                            postFix = "rd";
+                            break;
+                        default:
+                            postFix = "th";
+                            break;
+                    }
+                    
+                    System.out.println("Player " + curPlayer.getId() + " finished in " + place + postFix + " place");
+                }
+                listPlayers.remove(currentTurn);
+                currentTurn = Math.max(currentTurn-1, 0);
+            }
+        }
+        disableBtns();
+        //displayMessage("Finished");
+    }
+    
+    private void disableBtns(){
+        playBtn.setEnabled(false);
+        skipBtn.setEnabled(false);
+        playBtn.setBackground(Color.GRAY);
+        skipBtn.setBackground(Color.GRAY);
+    }
+
+    private void displayMessage(String mess){
+        playerCards.removeAll();
+        JLabel text = new JLabel(mess);
+    
+        playerCards.add(text);
+        playerCards.revalidate();
     }
 
     public void run() throws InterruptedException{  
