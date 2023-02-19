@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.awt.*;
+import javax.swing.*;
 import java.util.Scanner;
 import java.util.Arrays;
 
@@ -28,8 +30,8 @@ public class BigTwo {
 
     // ** 
 
-    public static ArrayList<Card> previousPlayedCard;
-    public static ArrayList<Player> listPlayers;
+    private ArrayList<Card> previousPlayedCard = new ArrayList<>();
+    private ArrayList<Player> listPlayers = new ArrayList<>();
     private ArrayList<String> allSymbolStates;
     private ArrayList<String> symbolRank;
     private ArrayList<String> shapeRank;
@@ -43,6 +45,17 @@ public class BigTwo {
     private int round;
     private Card min;
 
+    private final String currentWorkingDir = System.getProperty("user.dir").replace("\\", "/");
+    private java.awt.GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+    private JPanel mainPanel, firstLine, secondLine, thirdLine, prevCards, btns, playerCards;
+    private final int screenHeight = device.getDisplayMode().getHeight();
+    private final int screenWidth = device.getDisplayMode().getWidth();
+    private final String imgDir = currentWorkingDir + "/img";
+    private ArrayList<Card> selectedCards;
+    private JLabel player1, player2, player3;
+    private JButton playBtn, skipBtn;
+    private JFrame frame;
+
     public BigTwo(int players){
         // Set players in range 2 - 4 players
         players = Math.min(Math.max(players, 2), 4);
@@ -55,8 +68,30 @@ public class BigTwo {
         this.currentTurn = 0;
         this.round = 0;
 
+        final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
+
+        
         init();
         reset();
+        
+        this.prevCards = new JPanel(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
+        this.mainPanel = new JPanel(new BorderLayout());
+        this.secondLine = new JPanel(new BorderLayout());
+        this.thirdLine = new JPanel(new BorderLayout());
+        this.frame = new JFrame("Big Two");
+        this.playBtn = new JButton("Play");
+        this.skipBtn = new JButton("Skip");
+        this.selectedCards = new ArrayList<>();
+        this.player1 = new JLabel(backIcon);
+        this.player2 = new JLabel(backIcon);
+        this.player3 = new JLabel(backIcon);
+        this.playerCards = new JPanel();
+        this.firstLine = new JPanel();
+        this.btns = new JPanel();
+    }
+
+    private String cardToDir(Card card){
+        return System.getProperty("user.dir").replace("\\", "/") + "/img/" + card.toString() + ".png";
     }
 
     private void init(){
@@ -87,7 +122,7 @@ public class BigTwo {
     }
 
     private void reset(){
-        this.min = new Card("", "", 55, false);
+        this.min = new Card("TEMP", "TEMP", 55, false);
         this.previousPlayedCard = new ArrayList<>();
         this.listPlayers = new ArrayList<>();
         this.cards = new ArrayList<>();
@@ -920,6 +955,84 @@ public class BigTwo {
         playMin);
     }
 
+    private void initGUI(){
+        firstLine.add(player1);
+        firstLine.setBackground(Color.RED);
+
+        // Load previous card on the deck
+        for(Card card: previousPlayedCard){
+            ImageIcon cardImg = new ImageIcon(cardToDir(card));
+            JLabel cardPrev = new JLabel(cardImg);
+            prevCards.add(cardPrev);
+        }
+        prevCards.setBackground(Color.GREEN);
+
+        secondLine.add(player2, BorderLayout.WEST);
+        secondLine.add(prevCards, BorderLayout.CENTER);
+        secondLine.add(player3, BorderLayout.EAST);
+        secondLine.setBackground(Color.YELLOW);
+
+        // Third line
+        playBtn.setPreferredSize(new Dimension(200,70));
+        skipBtn.setPreferredSize(new Dimension(200,70));
+
+        btns.add(playBtn);
+        btns.add(skipBtn);
+        btns.setBackground(Color.MAGENTA);
+        
+        // Load main player cards
+        for(Player player: listPlayers){
+            if(player.getId() == 0){
+                ArrayList<Card> userCards = player.getCardsAvailable();
+                for(int i = 0; i< userCards.size(); i++){
+                    Card card = player.getCardsAvailable().get(i);
+
+                    ImageIcon cardImg = new ImageIcon(cardToDir(card));
+                    JButton cardBtn = new JButton();
+                    
+                    cardBtn.setIcon(cardImg);
+                    cardBtn.setBorderPainted(false); 
+                    cardBtn.setBackground(Color.BLACK);
+                    cardBtn.setActionCommand(Integer.toString(i));
+
+                    cardBtn.addActionListener(e -> {
+                        Card selectedCard = userCards.get(Integer.parseInt(cardBtn.getActionCommand()));
+                        int idx = selectedCards.indexOf(selectedCard);
+                        final int OFFSET = 10;
+
+                        if(idx < 0){
+                            selectedCards.add(selectedCard);
+                            cardBtn.setBackground(Color.YELLOW);
+                            cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()-OFFSET);
+                        } else {
+                            selectedCards.remove(idx); 
+                            cardBtn.setBackground(Color.BLACK);
+                            cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()+OFFSET);
+                        }
+                    });
+
+                    playerCards.add(cardBtn);
+                }
+            }
+        }
+        playerCards.setBackground(Color.BLACK);
+
+        thirdLine.add(playerCards, BorderLayout.SOUTH);
+        thirdLine.add(btns, BorderLayout.NORTH);
+        
+        // Add the the main
+        mainPanel.add(firstLine, BorderLayout.NORTH);
+        mainPanel.add(secondLine, BorderLayout.CENTER);
+        mainPanel.add(thirdLine, BorderLayout.SOUTH);
+
+        frame.add(mainPanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(screenWidth, screenHeight-100);
+        frame.setVisible(true);
+    }
+
+
+
     private void playConsole() throws InterruptedException{
         // ! Optimize purposes
         // ! DEBUG Performance
@@ -1108,9 +1221,19 @@ public class BigTwo {
         sc.close();
     }
 
+    private void playGUI(){
+        initGUI();
+        playBtn.addActionListener(e -> {
+            System.out.println(selectedCards);
+        });
+    }
+
     public void run() throws InterruptedException{  
-        // Main
+        // Play by console
         //playConsole();
+        
+        // Play by user-friendly GUI
+        playGUI();
 
         // Initialize GUI
         // cards = new ArrayList<>();
@@ -1121,8 +1244,6 @@ public class BigTwo {
         // previousPlayedCard.add(cards.get(23));
         // previousPlayedCard.add(cards.get(24));
 
-        GUI gameGui = new GUI();
-        gameGui.initGUI();
 
         // Get the system
         // System.getProperty("os.name")
