@@ -46,7 +46,7 @@ public class BigTwo {
     private Card min;
 
     private final String currentWorkingDir = System.getProperty("user.dir").replace("\\", "/");
-    private java.awt.GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+    private final java.awt.GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
     private JPanel mainPanel, firstLine, secondLine, thirdLine, prevCards, btns, playerCards;
     private final int screenHeight = device.getDisplayMode().getHeight();
     private final int screenWidth = device.getDisplayMode().getWidth();
@@ -69,8 +69,6 @@ public class BigTwo {
         this.currentTurn = 0;
         this.round = 0;
 
-
-        
         init();
         reset();
         
@@ -122,7 +120,7 @@ public class BigTwo {
     }
 
     private void reset(){
-        this.min = new Card("TEMP", "TEMP", 55, false);
+        this.min = new Card("TEMP", "TEMP", 100, false);
         this.previousPlayedCard = new ArrayList<>();
         this.listPlayers = new ArrayList<>();
         this.cards = new ArrayList<>();
