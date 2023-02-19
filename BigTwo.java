@@ -1074,6 +1074,8 @@ public class BigTwo {
             }
 
             // Main flow of a round
+
+            int skipPlayers = 0;
             while(!(checkFinish())){
                 Player currentPlayer = listPlayers.get(currentTurn);
                 ArrayList<Card> currentPlayerCards = currentPlayer.getCardsAvailable();
@@ -1082,8 +1084,10 @@ public class BigTwo {
                 // *FIXED 
 
                 //When everyone passes the turn
-                if(currentPlayer.getId() == lastPlayerPlayed){
-                    currentState = "ANY"; 
+                if(currentPlayer.getId() == lastPlayerPlayed ||
+                    skipPlayers == listPlayers.size()){
+                    currentState = "ANY";
+                    skipPlayers = 0;
                 }
 
                 // If it's our turn
@@ -1152,6 +1156,8 @@ public class BigTwo {
                             currentPlayer.playCard(cardsPlayed);
                             previousPlayedCard = cardsPlayed;
                             lastPlayerPlayed = 0;
+
+                            skipPlayers = 0;
                         } else {
                             // If player play different state
                             // OR player plays lower rank than
@@ -1160,6 +1166,9 @@ public class BigTwo {
                             // Play again new combination of cards
                             continue;
                         }
+                    // player skips
+                    } else {
+                        skipPlayers += 1;
                     }
                 
                 // Bot moves
@@ -1169,7 +1178,15 @@ public class BigTwo {
                     // If there is no possible move -> It skips the turn
                     System.out.println(previousPlayedCard);
                     printCards(currentPlayer);
-                    currentPlayer.playCard(botsPlayed(currentPlayerCards, currentPlayer.getId()));
+                    ArrayList<Card> botChose = botsPlayed(currentPlayerCards, currentPlayer.getId());
+                    
+                    // Skip
+                    if(botChose.size() == 0){
+                        skipPlayers += 1;
+                    } else {
+                        skipPlayers = 0;
+                    }
+                    currentPlayer.playCard(botChose);
                     printCards(currentPlayer);
                     // *Uncomment line below when finish 
                     //Thread.sleep(3000);
@@ -1280,7 +1297,10 @@ public class BigTwo {
             playBtn.setActionCommand("1");
         });
 
-
+        
+        // TODO
+        // ! HAVEN'T implement if no one can play
+        // ! Then the player the next turn can play ANY
         while(!checkFinish()){
             System.out.println(currentTurn);
             Player curPlayer = listPlayers.get(currentTurn);
@@ -1291,8 +1311,7 @@ public class BigTwo {
             }
 
             if(curPlayer.getId() == 0){
-                playBtn.setEnabled(true);
-                playBtn.setBackground(Color.GREEN);
+                enableBtns();
 
                 System.out.println("ME");
 
@@ -1309,14 +1328,14 @@ public class BigTwo {
 
             } else {
                 System.out.println("BOT");
-                playBtn.setEnabled(false);
-                playBtn.setBackground(Color.GRAY);
+                disableBtns();
 
                 Thread.sleep(3000);
+                System.out.println("Current turn: " + currentTurn);
+                System.out.println("DEBUG CARDS" + curPlayer.getCardsAvailable());
                 curPlayer.playCard(botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId()));
                 currentTurn = (currentTurn+1)%(listPlayers.size());
                 
-
                 // Update UI
                 loadPrevCard();
                 System.out.println("UPDATED");
@@ -1354,7 +1373,7 @@ public class BigTwo {
             }
         }
         disableBtns();
-        //displayMessage("Finished");
+        displayMessage("Finished");
     }
     
     private void disableBtns(){
@@ -1364,22 +1383,25 @@ public class BigTwo {
         skipBtn.setBackground(Color.GRAY);
     }
 
+    private void enableBtns(){
+        playBtn.setEnabled(true);
+        skipBtn.setEnabled(true);
+        playBtn.setBackground(Color.GREEN);
+        skipBtn.setBackground(Color.RED);
+    }
+
     private void displayMessage(String mess){
-        playerCards.removeAll();
-        JLabel text = new JLabel(mess);
-    
-        playerCards.add(text);
-        playerCards.revalidate();
+        JOptionPane.showMessageDialog(null, mess, "Game messaeg", JOptionPane.OK_OPTION);
     }
 
     public void run() throws InterruptedException{  
         // Play by console
-        //playConsole();
+        playConsole();
         
         // Play by user-friendly GUI
-        previousPlayedCard.add(new Card("A", "B", 0, false));
+        //previousPlayedCard.add(new Card("A", "B", 0, false));
 
-        playGUI();
+        //playGUI();
 
         // Initialize GUI
         // cards = new ArrayList<>();
