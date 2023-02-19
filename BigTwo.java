@@ -254,7 +254,7 @@ public class BigTwo {
             // Check instant win
             // Add case first round and other rounds
             if(round == 0 && hasThreeSpade){
-                ArrayList<Card> threePairSMD = findStraightPairs(cards, 3, 2);
+                ArrayList<Card> threePairSMD = findStraightPairs(listPlayers.get(i).getCardsAvailable(), 3, 2);
                 if(threePairSMD.contains(listPlayers.get(i).getCardsAvailable().get(0))){
                     return i;
                 }
@@ -948,39 +948,27 @@ public class BigTwo {
                 playMin = false;
             }
         }
-    
+
         return (!playerCardsState.equals("NONE") && 
         ((currentState.equals("ANY")) || playerCardsState.equals(currentState) || checkSmacking) && 
         ((compareToPrevCards(cardsPlayed) > 0) || checkSmacking) && 
         playMin);
     }
 
-    private void initGUI(){
-        firstLine.add(player1);
-        firstLine.setBackground(Color.RED);
-
-        // Load previous card on the deck
+    private void loadPrevCard(){
+        prevCards.removeAll();
+        prevCards.setLayout(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
         for(Card card: previousPlayedCard){
             ImageIcon cardImg = new ImageIcon(cardToDir(card));
             JLabel cardPrev = new JLabel(cardImg);
+
             prevCards.add(cardPrev);
         }
-        prevCards.setBackground(Color.GREEN);
+        prevCards.revalidate();
+    }
 
-        secondLine.add(player2, BorderLayout.WEST);
-        secondLine.add(prevCards, BorderLayout.CENTER);
-        secondLine.add(player3, BorderLayout.EAST);
-        secondLine.setBackground(Color.YELLOW);
-
-        // Third line
-        playBtn.setPreferredSize(new Dimension(200,70));
-        skipBtn.setPreferredSize(new Dimension(200,70));
-
-        btns.add(playBtn);
-        btns.add(skipBtn);
-        btns.setBackground(Color.MAGENTA);
-        
-        // Load main player cards
+    private void loadPlayerCards(){
+        playerCards.removeAll();
         for(Player player: listPlayers){
             if(player.getId() == 0){
                 ArrayList<Card> userCards = player.getCardsAvailable();
@@ -1015,6 +1003,35 @@ public class BigTwo {
                 }
             }
         }
+        playerCards.revalidate();
+    }
+
+    private void initGUI(){
+        firstLine.add(player1);
+        firstLine.setBackground(Color.RED);
+
+        // Load previous card on the deck
+        loadPrevCard();
+        prevCards.setBackground(Color.GREEN);
+
+        if(players >= 3){
+            secondLine.add(player2, BorderLayout.WEST);
+        }
+        secondLine.add(prevCards, BorderLayout.CENTER);
+        if(players == 4){
+            secondLine.add(player3, BorderLayout.EAST);
+        }
+        secondLine.setBackground(Color.YELLOW);
+
+        playBtn.setPreferredSize(new Dimension(200,70));
+        skipBtn.setPreferredSize(new Dimension(200,70));
+
+        btns.add(playBtn);
+        btns.add(skipBtn);
+        btns.setBackground(Color.MAGENTA);
+        
+        // Load main player cards
+        loadPlayerCards();
         playerCards.setBackground(Color.BLACK);
 
         thirdLine.add(playerCards, BorderLayout.SOUTH);
@@ -1030,8 +1047,6 @@ public class BigTwo {
         frame.setSize(screenWidth, screenHeight-100);
         frame.setVisible(true);
     }
-
-
 
     private void playConsole() throws InterruptedException{
         // ! Optimize purposes
@@ -1223,8 +1238,39 @@ public class BigTwo {
 
     private void playGUI(){
         initGUI();
+
+        int winner = checkInstantWin();
+        if(winner != -1){
+            previousPlayedCard = listPlayers.get(winner).getCardsAvailable();
+            loadPrevCard();
+            System.out.println("WINNER");
+            return; 
+        }
+        
+        currentTurn = 0;
+        Player currentPlayer = listPlayers.get(currentTurn);
+        ArrayList<Card> playerCards = currentPlayer.getCardsAvailable();
+
         playBtn.addActionListener(e -> {
-            System.out.println(selectedCards);
+            selectedCards.sort(((o1, o2) -> o1.compareTo(o2)));
+            String state = stateOfCards(selectedCards);
+
+            if(checkValid(selectedCards, state)){
+                // Show on prev deck
+                previousPlayedCard = selectedCards;
+                loadPrevCard();
+
+                // Remove from player cards
+                for(Card card: selectedCards){
+                    playerCards.remove(card);
+                }
+
+                // Update UI of player cards
+                loadPlayerCards();
+
+                frame.repaint();
+                selectedCards = new ArrayList<>();
+            }
         });
     }
 
@@ -1233,6 +1279,8 @@ public class BigTwo {
         //playConsole();
         
         // Play by user-friendly GUI
+        previousPlayedCard.add(new Card("A", "B", 0, false));
+
         playGUI();
 
         // Initialize GUI
