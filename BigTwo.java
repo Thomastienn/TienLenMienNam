@@ -5,6 +5,311 @@ import java.util.Scanner;
 import java.util.Arrays;
 
 public class BigTwo {
+    private class GUI {
+        private final String currentWorkingDir = System.getProperty("user.dir").replace("\\", "/");
+        private final java.awt.GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        private JPanel mainPanel, firstLine, secondLine, thirdLine, prevCards, btns, playerCards;
+        private final int screenHeight = device.getDisplayMode().getHeight();
+        private final int screenWidth = device.getDisplayMode().getWidth();
+        private final String imgDir = currentWorkingDir + "/img";
+        private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
+        private ArrayList<Card> selectedCards;
+        private JLabel player1, player2, player3;
+        private JButton playBtn, skipBtn;
+        private JFrame frame;
+
+        public GUI(){
+            this.prevCards = new JPanel(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
+            this.mainPanel = new JPanel(new BorderLayout());
+            this.secondLine = new JPanel(new BorderLayout());
+            this.thirdLine = new JPanel(new BorderLayout());
+            this.frame = new JFrame("Big Two");
+            this.playBtn = new JButton("Play");
+            this.skipBtn = new JButton("Skip");
+            this.selectedCards = new ArrayList<>();
+            this.player1 = new JLabel(backIcon);
+            this.player2 = new JLabel(backIcon);
+            this.player3 = new JLabel(backIcon);
+            this.playerCards = new JPanel();
+            this.firstLine = new JPanel();
+            this.btns = new JPanel();
+        }
+
+        private String cardToDir(Card card){
+            return System.getProperty("user.dir").replace("\\", "/") + "/img/" + card.toString() + ".png";
+        }
+
+        private void loadPrevCard(){
+            prevCards.removeAll();
+            prevCards.setLayout(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
+            for(Card card: previousPlayedCard){
+                ImageIcon cardImg = new ImageIcon(cardToDir(card));
+                JLabel cardPrev = new JLabel(cardImg);
+                
+                prevCards.add(cardPrev);
+            }
+            prevCards.revalidate();
+        }
+    
+        private void loadPlayerCards(){
+            playerCards.removeAll();
+            for(Player player: listPlayers){
+                if(player.getId() == 0){
+                    ArrayList<Card> userCards = player.getCardsAvailable();
+                    for(int i = 0; i< userCards.size(); i++){
+                        Card card = player.getCardsAvailable().get(i);
+    
+                        ImageIcon cardImg = new ImageIcon(cardToDir(card));
+                        JButton cardBtn = new JButton();
+                        
+                        cardBtn.setIcon(cardImg);
+                        cardBtn.setBorderPainted(false); 
+                        cardBtn.setBackground(Color.BLACK);
+                        cardBtn.setActionCommand(Integer.toString(i));
+    
+                        cardBtn.addActionListener(e -> {
+                            Card selectedCard = userCards.get(Integer.parseInt(cardBtn.getActionCommand()));
+                            int idx = selectedCards.indexOf(selectedCard);
+                            final int OFFSET = 10;
+    
+                            if(idx < 0){
+                                selectedCards.add(selectedCard);
+                                cardBtn.setBackground(Color.YELLOW);
+                                cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()-OFFSET);
+                            } else {
+                                selectedCards.remove(idx); 
+                                cardBtn.setBackground(Color.BLACK);
+                                cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()+OFFSET);
+                            }
+                        });
+    
+                        playerCards.add(cardBtn);
+                    }
+                }
+            }
+            playerCards.revalidate();
+        }
+    
+        private void initGUI(){
+            firstLine.add(player1);
+            firstLine.setBackground(Color.RED);
+    
+            // Load previous card on the deck
+            loadPrevCard();
+            prevCards.setBackground(Color.GREEN);
+    
+            if(players >= 3){
+                secondLine.add(player2, BorderLayout.WEST);
+            }
+            secondLine.add(prevCards, BorderLayout.CENTER);
+            if(players == 4){
+                secondLine.add(player3, BorderLayout.EAST);
+            }
+            secondLine.setBackground(Color.YELLOW);
+    
+            playBtn.setBackground(Color.GREEN);
+            playBtn.setActionCommand("0");
+            playBtn.setPreferredSize(new Dimension(200,70));
+            skipBtn.setPreferredSize(new Dimension(200,70));
+            skipBtn.setActionCommand("0");
+    
+            btns.add(playBtn);
+            btns.add(skipBtn);
+            btns.setBackground(Color.MAGENTA);
+            
+            // Load main player cards
+            loadPlayerCards();
+            playerCards.setBackground(Color.BLACK);
+    
+            thirdLine.add(playerCards, BorderLayout.SOUTH);
+            thirdLine.add(btns, BorderLayout.NORTH);
+            
+            // Add the the main
+            mainPanel.add(firstLine, BorderLayout.NORTH);
+            mainPanel.add(secondLine, BorderLayout.CENTER);
+            mainPanel.add(thirdLine, BorderLayout.SOUTH);
+    
+            frame.add(mainPanel);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(screenWidth, screenHeight-100);
+            frame.setVisible(true);
+        }
+
+        private void updateCurrentPlayer(int id){
+            if((players == 2 && id == 1)){
+                id = 2;
+            } else if(players == 3){
+                id += 1;
+            }
+    
+            player3.setIcon(backIcon);
+            player2.setIcon(backIcon);
+            player1.setIcon(backIcon);
+    
+            if(id == 1){
+                player3.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
+            } else if(id == 2){
+                player1.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
+            } else if(id == 3){
+                player2.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
+            }
+        }
+        
+        private void disableBtns(){
+            playBtn.setEnabled(false);
+            skipBtn.setEnabled(false);
+            playBtn.setBackground(Color.GRAY);
+            skipBtn.setBackground(Color.GRAY);
+        }
+    
+        private void enableBtns(){
+            playBtn.setEnabled(true);
+            skipBtn.setEnabled(true);
+            playBtn.setBackground(Color.GREEN);
+            skipBtn.setBackground(Color.RED);
+        }
+    
+        private void displayMessage(String mess){
+            JOptionPane.showMessageDialog(null, mess, "Game message", JOptionPane.NO_OPTION);
+        }
+
+        public void playGUI() throws InterruptedException{
+            initGUI();
+    
+            int winner = checkInstantWin();
+            if(winner != -1){
+                previousPlayedCard = listPlayers.get(winner).getCardsAvailable();
+                loadPrevCard();
+                System.out.println("WINNER");
+                return; 
+            }
+            
+            playBtn.addActionListener(e -> {
+                selectedCards.sort(((o1, o2) -> o1.compareTo(o2)));
+                String state = stateOfCards(selectedCards);
+    
+                Player currentPlayer = listPlayers.get(0);
+    
+                if(checkValid(selectedCards, state)){
+                    // Show on prev deck
+                    previousPlayedCard = selectedCards;
+                    loadPrevCard();
+    
+                    // Remove from player cards
+                    currentPlayer.playCard(selectedCards);
+    
+                    // Update UI of player cards
+                    loadPlayerCards();
+    
+                    currentState = state;
+                    lastPlayerPlayed = 0;
+                    frame.repaint();
+                    selectedCards = new ArrayList<>();
+    
+                    // Notify that a user has made a move
+                    playBtn.setActionCommand("1");
+                    skipBtn.setActionCommand("0");
+                }
+            });
+    
+            skipBtn.addActionListener(e -> {
+                
+                // Store the number of people skips
+                skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
+    
+                // Notify that a user has made a move
+                playBtn.setActionCommand("1");
+            });
+    
+            
+            // ! HAVEN'T implement if no one can play
+            // ! Then the player the next turn can play ANY
+            // *CONSOLE FIXED
+            // *GUI FIXED
+    
+            while(!checkFinish()){
+                System.out.println(currentTurn);
+                Player curPlayer = listPlayers.get(currentTurn);
+                updateCurrentPlayer(curPlayer.getId());
+                
+                //When everyone passes the turn
+                if(curPlayer.getId() == lastPlayerPlayed ||
+                Integer.parseInt(skipBtn.getActionCommand()) == listPlayers.size()){
+                    currentState = "ANY"; 
+                    skipBtn.setActionCommand("0");;
+                }
+    
+                if(curPlayer.getId() == 0){
+                    enableBtns();
+    
+                    // Wait until user make a move
+                    while(true){
+                        if(Integer.parseInt(playBtn.getActionCommand()) != 0){
+                            playBtn.setActionCommand("0");
+                            break;
+                        }
+                        Thread.sleep(1000);
+                    }
+    
+                } else {
+                    disableBtns();
+    
+                    Thread.sleep(1500);
+    
+                    ArrayList<Card> botChose = botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId());
+    
+                    // Skip
+                    if(botChose.size() == 0){
+                        skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
+                    } else {
+                        skipBtn.setActionCommand("0");
+                    }
+    
+                    curPlayer.playCard(botChose);
+                    
+                    // Update UI
+                    loadPrevCard();
+                }
+    
+                // If current player plays all the cards
+                if(checkWin(curPlayer)){
+                    String pronoun = "You";
+                    if(curPlayer.getId() == 0){
+                        disableBtns();
+                    } else {
+                        pronoun = "Player " + curPlayer.getId();
+                    }
+    
+                    int place = ((players-listPlayers.size())+1);
+                    String postFix = "";
+                    
+                    switch(place){
+                        case 1:
+                        postFix = "st";
+                        break;
+                        case 2:
+                        postFix = "nd";
+                            break;
+                        case 3:
+                            postFix = "rd";
+                            break;
+                        default:
+                            postFix = "th";
+                            break;
+                    }
+                    
+                    displayMessage(pronoun + " finished in " + place + postFix + " place");
+    
+                    listPlayers.remove(currentTurn);
+                    currentTurn = Math.max(currentTurn-1, 0);
+                }
+                currentTurn = (currentTurn+1)%(listPlayers.size());
+            }
+            disableBtns();
+            displayMessage("Finished");
+        }
+    }
+    
     // Attributes
 
     // **
@@ -45,18 +350,6 @@ public class BigTwo {
     private int round;
     private Card min;
 
-    private final String currentWorkingDir = System.getProperty("user.dir").replace("\\", "/");
-    private final java.awt.GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-    private JPanel mainPanel, firstLine, secondLine, thirdLine, prevCards, btns, playerCards;
-    private final int screenHeight = device.getDisplayMode().getHeight();
-    private final int screenWidth = device.getDisplayMode().getWidth();
-    private final String imgDir = currentWorkingDir + "/img";
-    private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
-    private ArrayList<Card> selectedCards;
-    private JLabel player1, player2, player3;
-    private JButton playBtn, skipBtn;
-    private JFrame frame;
-
     public BigTwo(int players){
         // Set players in range 2 - 4 players
         players = Math.min(Math.max(players, 2), 4);
@@ -71,25 +364,6 @@ public class BigTwo {
 
         init();
         reset();
-        
-        this.prevCards = new JPanel(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
-        this.mainPanel = new JPanel(new BorderLayout());
-        this.secondLine = new JPanel(new BorderLayout());
-        this.thirdLine = new JPanel(new BorderLayout());
-        this.frame = new JFrame("Big Two");
-        this.playBtn = new JButton("Play");
-        this.skipBtn = new JButton("Skip");
-        this.selectedCards = new ArrayList<>();
-        this.player1 = new JLabel(backIcon);
-        this.player2 = new JLabel(backIcon);
-        this.player3 = new JLabel(backIcon);
-        this.playerCards = new JPanel();
-        this.firstLine = new JPanel();
-        this.btns = new JPanel();
-    }
-
-    private String cardToDir(Card card){
-        return System.getProperty("user.dir").replace("\\", "/") + "/img/" + card.toString() + ".png";
     }
 
     private void init(){
@@ -953,102 +1227,6 @@ public class BigTwo {
         playMin);
     }
 
-    private void loadPrevCard(){
-        prevCards.removeAll();
-        prevCards.setLayout(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
-        for(Card card: previousPlayedCard){
-            ImageIcon cardImg = new ImageIcon(cardToDir(card));
-            JLabel cardPrev = new JLabel(cardImg);
-            
-            prevCards.add(cardPrev);
-        }
-        prevCards.revalidate();
-    }
-
-    private void loadPlayerCards(){
-        playerCards.removeAll();
-        for(Player player: listPlayers){
-            if(player.getId() == 0){
-                ArrayList<Card> userCards = player.getCardsAvailable();
-                for(int i = 0; i< userCards.size(); i++){
-                    Card card = player.getCardsAvailable().get(i);
-
-                    ImageIcon cardImg = new ImageIcon(cardToDir(card));
-                    JButton cardBtn = new JButton();
-                    
-                    cardBtn.setIcon(cardImg);
-                    cardBtn.setBorderPainted(false); 
-                    cardBtn.setBackground(Color.BLACK);
-                    cardBtn.setActionCommand(Integer.toString(i));
-
-                    cardBtn.addActionListener(e -> {
-                        Card selectedCard = userCards.get(Integer.parseInt(cardBtn.getActionCommand()));
-                        int idx = selectedCards.indexOf(selectedCard);
-                        final int OFFSET = 10;
-
-                        if(idx < 0){
-                            selectedCards.add(selectedCard);
-                            cardBtn.setBackground(Color.YELLOW);
-                            cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()-OFFSET);
-                        } else {
-                            selectedCards.remove(idx); 
-                            cardBtn.setBackground(Color.BLACK);
-                            cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()+OFFSET);
-                        }
-                    });
-
-                    playerCards.add(cardBtn);
-                }
-            }
-        }
-        playerCards.revalidate();
-    }
-
-    private void initGUI(){
-        firstLine.add(player1);
-        firstLine.setBackground(Color.RED);
-
-        // Load previous card on the deck
-        loadPrevCard();
-        prevCards.setBackground(Color.GREEN);
-
-        if(players >= 3){
-            secondLine.add(player2, BorderLayout.WEST);
-        }
-        secondLine.add(prevCards, BorderLayout.CENTER);
-        if(players == 4){
-            secondLine.add(player3, BorderLayout.EAST);
-        }
-        secondLine.setBackground(Color.YELLOW);
-
-        playBtn.setBackground(Color.GREEN);
-        playBtn.setActionCommand("0");
-        playBtn.setPreferredSize(new Dimension(200,70));
-        skipBtn.setPreferredSize(new Dimension(200,70));
-        skipBtn.setActionCommand("0");
-
-        btns.add(playBtn);
-        btns.add(skipBtn);
-        btns.setBackground(Color.MAGENTA);
-        
-        // Load main player cards
-        loadPlayerCards();
-        playerCards.setBackground(Color.BLACK);
-
-        thirdLine.add(playerCards, BorderLayout.SOUTH);
-        thirdLine.add(btns, BorderLayout.NORTH);
-        
-        // Add the the main
-        mainPanel.add(firstLine, BorderLayout.NORTH);
-        mainPanel.add(secondLine, BorderLayout.CENTER);
-        mainPanel.add(thirdLine, BorderLayout.SOUTH);
-
-        frame.add(mainPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(screenWidth, screenHeight-100);
-        frame.setVisible(true);
-    }
-
     private void playConsole() throws InterruptedException{
         // ! Optimize purposes
         // ! DEBUG Performance
@@ -1249,188 +1427,13 @@ public class BigTwo {
         sc.close();
     }
 
-    private void playGUI() throws InterruptedException{
-        initGUI();
-
-        int winner = checkInstantWin();
-        if(winner != -1){
-            previousPlayedCard = listPlayers.get(winner).getCardsAvailable();
-            loadPrevCard();
-            System.out.println("WINNER");
-            return; 
-        }
-        
-        playBtn.addActionListener(e -> {
-            selectedCards.sort(((o1, o2) -> o1.compareTo(o2)));
-            String state = stateOfCards(selectedCards);
-
-            Player currentPlayer = listPlayers.get(0);
-
-            if(checkValid(selectedCards, state)){
-                // Show on prev deck
-                previousPlayedCard = selectedCards;
-                loadPrevCard();
-
-                // Remove from player cards
-                currentPlayer.playCard(selectedCards);
-
-                // Update UI of player cards
-                loadPlayerCards();
-
-                currentState = state;
-                lastPlayerPlayed = 0;
-                frame.repaint();
-                selectedCards = new ArrayList<>();
-
-                // Notify that a user has made a move
-                playBtn.setActionCommand("1");
-                skipBtn.setActionCommand("0");
-            }
-        });
-
-        skipBtn.addActionListener(e -> {
-            
-            // Store the number of people skips
-            skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
-
-            // Notify that a user has made a move
-            playBtn.setActionCommand("1");
-        });
-
-        
-        // ! HAVEN'T implement if no one can play
-        // ! Then the player the next turn can play ANY
-        // *CONSOLE FIXED
-        // *GUI FIXED
-
-        while(!checkFinish()){
-            System.out.println(currentTurn);
-            Player curPlayer = listPlayers.get(currentTurn);
-            updateCurrentPlayer(curPlayer.getId());
-            
-            //When everyone passes the turn
-            if(curPlayer.getId() == lastPlayerPlayed ||
-            Integer.parseInt(skipBtn.getActionCommand()) == listPlayers.size()){
-                currentState = "ANY"; 
-                skipBtn.setActionCommand("0");;
-            }
-
-            if(curPlayer.getId() == 0){
-                enableBtns();
-
-                // Wait until user make a move
-                while(true){
-                    if(Integer.parseInt(playBtn.getActionCommand()) != 0){
-                        playBtn.setActionCommand("0");
-                        break;
-                    }
-                    Thread.sleep(1000);
-                }
-
-            } else {
-                disableBtns();
-
-                Thread.sleep(1500);
-
-                ArrayList<Card> botChose = botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId());
-
-                // Skip
-                if(botChose.size() == 0){
-                    skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
-                } else {
-                    skipBtn.setActionCommand("0");
-                }
-
-                curPlayer.playCard(botChose);
-                
-                // Update UI
-                loadPrevCard();
-            }
-
-            // If current player plays all the cards
-            if(checkWin(curPlayer)){
-                String pronoun = "You";
-                if(curPlayer.getId() == 0){
-                    disableBtns();
-                } else {
-                    pronoun = "Player " + curPlayer.getId();
-                }
-
-                int place = ((players-listPlayers.size())+1);
-                String postFix = "";
-                
-                switch(place){
-                    case 1:
-                    postFix = "st";
-                    break;
-                    case 2:
-                    postFix = "nd";
-                        break;
-                    case 3:
-                        postFix = "rd";
-                        break;
-                    default:
-                        postFix = "th";
-                        break;
-                }
-                
-                displayMessage(pronoun + " finished in " + place + postFix + " place");
-
-                listPlayers.remove(currentTurn);
-                currentTurn = Math.max(currentTurn-1, 0);
-            }
-            currentTurn = (currentTurn+1)%(listPlayers.size());
-        }
-        disableBtns();
-        displayMessage("Finished");
-    }
-
-    private void updateCurrentPlayer(int id){
-        if((players == 2 && id == 1)){
-            id = 2;
-        } else if(players == 3){
-            id += 1;
-        }
-
-        player3.setIcon(backIcon);
-        player2.setIcon(backIcon);
-        player1.setIcon(backIcon);
-
-        if(id == 1){
-            player3.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
-        } else if(id == 2){
-            player1.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
-        } else if(id == 3){
-            player2.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
-        }
-    }
-    
-    private void disableBtns(){
-        playBtn.setEnabled(false);
-        skipBtn.setEnabled(false);
-        playBtn.setBackground(Color.GRAY);
-        skipBtn.setBackground(Color.GRAY);
-    }
-
-    private void enableBtns(){
-        playBtn.setEnabled(true);
-        skipBtn.setEnabled(true);
-        playBtn.setBackground(Color.GREEN);
-        skipBtn.setBackground(Color.RED);
-    }
-
-    private void displayMessage(String mess){
-        JOptionPane.showMessageDialog(null, mess, "Game message", JOptionPane.NO_OPTION);
-    }
-
     public void run() throws InterruptedException{  
         // Play by console
         //playConsole();
         
         // Play by user-friendly GUI
-        //previousPlayedCard.add(new Card("A", "B", 0, false));
-
-        playGUI();
+        GUI gui = new GUI();
+        gui.playGUI();
 
         // Initialize GUI
         // cards = new ArrayList<>();
