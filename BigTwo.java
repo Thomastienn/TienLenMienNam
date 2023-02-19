@@ -1027,6 +1027,7 @@ public class BigTwo {
         playBtn.setActionCommand("0");
         playBtn.setPreferredSize(new Dimension(200,70));
         skipBtn.setPreferredSize(new Dimension(200,70));
+        skipBtn.setActionCommand("0");
 
         btns.add(playBtn);
         btns.add(skipBtn);
@@ -1282,45 +1283,46 @@ public class BigTwo {
                 lastPlayerPlayed = 0;
                 frame.repaint();
                 selectedCards = new ArrayList<>();
-                currentTurn = (currentTurn+1)%(listPlayers.size());
 
                 // Notify that a user has made a move
                 playBtn.setActionCommand("1");
+                skipBtn.setActionCommand("0");
             }
         });
 
         skipBtn.addActionListener(e -> {
-            currentTurn = (currentTurn+1)%(listPlayers.size());
+            
+            // Store the number of people skips
+            skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
+
             // Notify that a user has made a move
             playBtn.setActionCommand("1");
         });
 
         
-        // TODO
         // ! HAVEN'T implement if no one can play
         // ! Then the player the next turn can play ANY
         // *CONSOLE FIXED
-        // ! GUI IS NOT FIXED
+        // *GUI FIXED
+
         while(!checkFinish()){
             System.out.println(currentTurn);
             Player curPlayer = listPlayers.get(currentTurn);
             updateCurrentPlayer(curPlayer.getId());
             
             //When everyone passes the turn
-            if(curPlayer.getId() == lastPlayerPlayed){
+            if(curPlayer.getId() == lastPlayerPlayed ||
+            Integer.parseInt(skipBtn.getActionCommand()) == listPlayers.size()){
                 currentState = "ANY"; 
+                skipBtn.setActionCommand("0");;
             }
 
             if(curPlayer.getId() == 0){
                 enableBtns();
 
-                System.out.println("ME");
-
                 // Wait until user make a move
                 while(true){
-                    System.out.println("THREAD RUN");
                     if(Integer.parseInt(playBtn.getActionCommand()) != 0){
-                        System.out.println("PLAY");
                         playBtn.setActionCommand("0");
                         break;
                     }
@@ -1328,56 +1330,70 @@ public class BigTwo {
                 }
 
             } else {
-                System.out.println("BOT");
                 disableBtns();
 
-                Thread.sleep(3000);
-                System.out.println("Current turn: " + currentTurn);
-                System.out.println("DEBUG CARDS" + curPlayer.getCardsAvailable());
-                curPlayer.playCard(botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId()));
-                currentTurn = (currentTurn+1)%(listPlayers.size());
+                Thread.sleep(1500);
+
+                ArrayList<Card> botChose = botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId());
+
+                // Skip
+                if(botChose.size() == 0){
+                    skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
+                } else {
+                    skipBtn.setActionCommand("0");
+                }
+
+                curPlayer.playCard(botChose);
                 
                 // Update UI
                 loadPrevCard();
-                System.out.println("UPDATED");
             }
-            System.out.println("RUNNING");
 
             // If current player plays all the cards
             if(checkWin(curPlayer)){
+                String pronoun = "You";
                 if(curPlayer.getId() == 0){
-                    System.out.println("You win!");
                     disableBtns();
                 } else {
-                    int place = ((players-listPlayers.size())+1);
-                    String postFix = "";
-                    
-                    switch(place){
-                        case 1:
-                        postFix = "st";
-                        break;
-                        case 2:
-                        postFix = "nd";
-                            break;
-                        case 3:
-                            postFix = "rd";
-                            break;
-                        default:
-                            postFix = "th";
-                            break;
-                    }
-                    
-                    System.out.println("Player " + curPlayer.getId() + " finished in " + place + postFix + " place");
+                    pronoun = "Player " + curPlayer.getId();
                 }
+
+                int place = ((players-listPlayers.size())+1);
+                String postFix = "";
+                
+                switch(place){
+                    case 1:
+                    postFix = "st";
+                    break;
+                    case 2:
+                    postFix = "nd";
+                        break;
+                    case 3:
+                        postFix = "rd";
+                        break;
+                    default:
+                        postFix = "th";
+                        break;
+                }
+                
+                displayMessage(pronoun + " finished in " + place + postFix + " place");
+
                 listPlayers.remove(currentTurn);
                 currentTurn = Math.max(currentTurn-1, 0);
             }
+            currentTurn = (currentTurn+1)%(listPlayers.size());
         }
         disableBtns();
         displayMessage("Finished");
     }
 
     private void updateCurrentPlayer(int id){
+        if((players == 2 && id == 1)){
+            id = 2;
+        } else if(players == 3){
+            id += 1;
+        }
+
         player3.setIcon(backIcon);
         player2.setIcon(backIcon);
         player1.setIcon(backIcon);
@@ -1406,7 +1422,7 @@ public class BigTwo {
     }
 
     private void displayMessage(String mess){
-        JOptionPane.showMessageDialog(null, mess, "Game messaeg", JOptionPane.OK_OPTION);
+        JOptionPane.showMessageDialog(null, mess, "Game message", JOptionPane.NO_OPTION);
     }
 
     public void run() throws InterruptedException{  
