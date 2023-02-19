@@ -17,6 +17,8 @@ public class BigTwo {
         private JLabel player1, player2, player3;
         private JButton playBtn, skipBtn;
         private JFrame frame;
+        private final int NUM_CARD_OFFSET = 10;
+        private final Font numCardFont = new Font(Font.SANS_SERIF, Font.BOLD, 20);
 
         public GUI(){
             this.prevCards = new JPanel(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
@@ -91,6 +93,24 @@ public class BigTwo {
         }
     
         private void initGUI(){
+            player1.setText("13");
+            player2.setText("13");
+            player3.setText("13");
+            
+            player1.setForeground(Color.WHITE);
+            player2.setForeground(Color.WHITE);
+            player3.setForeground(Color.WHITE);
+
+            player1.setFont(numCardFont);
+            player2.setFont(numCardFont);
+            player3.setFont(numCardFont);
+
+            int movePixel = (-backIcon.getIconWidth()/2)-NUM_CARD_OFFSET;
+
+            player1.setIconTextGap(movePixel);
+            player2.setIconTextGap(movePixel);
+            player3.setIconTextGap(movePixel);
+
             firstLine.add(player1);
             firstLine.setBackground(Color.RED);
     
@@ -136,22 +156,41 @@ public class BigTwo {
         }
 
         private void updateCurrentPlayer(int id){
-            if((players == 2 && id == 1)){
-                id = 2;
-            } else if(players == 3){
-                id += 1;
-            }
-    
             player3.setIcon(backIcon);
             player2.setIcon(backIcon);
             player1.setIcon(backIcon);
-    
-            if(id == 1){
-                player3.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
-            } else if(id == 2){
-                player1.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
-            } else if(id == 3){
-                player2.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
+
+            if(id == 0){
+                return;
+            }
+            int changedID = id;
+            if((players == 2 && id == 1)){
+                changedID = 2;
+            } else if(players == 3){
+                changedID += 1;
+            }
+            
+            JLabel changedLabel;
+
+            if(changedID == 1){
+                changedLabel = player3;
+            } else if(changedID == 2){
+                changedLabel = player1;
+            } else {
+                changedLabel = player2;
+            }
+
+            changedLabel.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
+            for(Player player: listPlayers){
+                int size = player.getCardsAvailable().size();
+                if(player.getId() == id){
+                    changedLabel.setText(Integer.toString(size));
+                    break;
+                }
+                if(size == 0){
+                    changedLabel.setIcon(null);
+                    changedLabel.setText("FINISHED");
+                }
             }
         }
         
@@ -213,7 +252,11 @@ public class BigTwo {
             });
     
             skipBtn.addActionListener(e -> {
-                
+                // Cannot skip if it's any
+                if(currentState.equals("ANY")){
+                    return;
+                }
+
                 // Store the number of people skips
                 skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
     
@@ -250,26 +293,29 @@ public class BigTwo {
                         }
                         Thread.sleep(1000);
                     }
-    
+                    
                 } else {
                     disableBtns();
-    
-                    Thread.sleep(1500);
-    
+                    
+                    Thread.sleep(1000);
+                    
                     ArrayList<Card> botChose = botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId());
-    
+                    
                     // Skip
                     if(botChose.size() == 0){
                         skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
                     } else {
                         skipBtn.setActionCommand("0");
                     }
-    
+                    
                     curPlayer.playCard(botChose);
                     
                     // Update UI
                     loadPrevCard();
+
+                    Thread.sleep(1000);
                 }
+                updateCurrentPlayer(curPlayer.getId());
     
                 // If current player plays all the cards
                 if(checkWin(curPlayer)){
