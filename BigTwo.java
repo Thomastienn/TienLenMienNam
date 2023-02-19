@@ -51,6 +51,7 @@ public class BigTwo {
     private final int screenHeight = device.getDisplayMode().getHeight();
     private final int screenWidth = device.getDisplayMode().getWidth();
     private final String imgDir = currentWorkingDir + "/img";
+    private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
     private ArrayList<Card> selectedCards;
     private JLabel player1, player2, player3;
     private JButton playBtn, skipBtn;
@@ -68,7 +69,6 @@ public class BigTwo {
         this.currentTurn = 0;
         this.round = 0;
 
-        final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
 
         
         init();
@@ -1261,8 +1261,6 @@ public class BigTwo {
             return; 
         }
         
-        //currentTurn = 0;
-        
         playBtn.addActionListener(e -> {
             selectedCards.sort(((o1, o2) -> o1.compareTo(o2)));
             String state = stateOfCards(selectedCards);
@@ -1301,10 +1299,13 @@ public class BigTwo {
         // TODO
         // ! HAVEN'T implement if no one can play
         // ! Then the player the next turn can play ANY
+        // *CONSOLE FIXED
+        // ! GUI IS NOT FIXED
         while(!checkFinish()){
             System.out.println(currentTurn);
             Player curPlayer = listPlayers.get(currentTurn);
-
+            updateCurrentPlayer(curPlayer.getId());
+            
             //When everyone passes the turn
             if(curPlayer.getId() == lastPlayerPlayed){
                 currentState = "ANY"; 
@@ -1375,6 +1376,20 @@ public class BigTwo {
         disableBtns();
         displayMessage("Finished");
     }
+
+    private void updateCurrentPlayer(int id){
+        player3.setIcon(backIcon);
+        player2.setIcon(backIcon);
+        player1.setIcon(backIcon);
+
+        if(id == 1){
+            player3.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
+        } else if(id == 2){
+            player1.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
+        } else if(id == 3){
+            player2.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
+        }
+    }
     
     private void disableBtns(){
         playBtn.setEnabled(false);
@@ -1396,12 +1411,12 @@ public class BigTwo {
 
     public void run() throws InterruptedException{  
         // Play by console
-        playConsole();
+        //playConsole();
         
         // Play by user-friendly GUI
         //previousPlayedCard.add(new Card("A", "B", 0, false));
 
-        //playGUI();
+        playGUI();
 
         // Initialize GUI
         // cards = new ArrayList<>();
