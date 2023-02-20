@@ -16,7 +16,7 @@ public class BigTwo {
         private JPanel mainPanel, firstLine, secondLine, thirdLine, prevCards, btns, playerCards;
         private final int screenHeight = device.getDisplayMode().getHeight();
         private final int screenWidth = device.getDisplayMode().getWidth();
-        private final String imgDir = currentWorkingDir + "/img";
+        private final String imgDir = currentWorkingDir + "/com/bigtwo/images";
         private final ImageIcon activedIcon = new ImageIcon(imgDir + "/purple_back.png");
         private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
         private JLabel player1, player2, player3;
