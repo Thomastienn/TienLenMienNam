@@ -32,7 +32,7 @@ public class BigTwo {
         private final Color tableColor = new Color(133, 237, 172);
 
         public GUI(){
-            this.prevCards = new JPanel(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
+            this.prevCards = new JPanel();
             this.mainPanel = new JPanel(new BorderLayout());
             this.secondLine = new JPanel(new BorderLayout());
             this.thirdLine = new JPanel(new BorderLayout());
@@ -54,7 +54,6 @@ public class BigTwo {
 
         private void loadPrevCard(){
             prevCards.removeAll();
-            prevCards.setLayout(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
             for(Card card: previousPlayedCard){
                 ImageIcon cardImg = new ImageIcon(cardToDir(card));
                 JLabel cardPrev = new JLabel(cardImg);
@@ -62,6 +61,7 @@ public class BigTwo {
                 prevCards.add(cardPrev);
             }
             prevCards.revalidate();
+            frame.repaint();
         }
     
         private void loadPlayerCards(){
@@ -181,9 +181,15 @@ public class BigTwo {
         }
 
         private void updateCurrentPlayer(int id){
-            player3.setIcon(backIcon);
-            player2.setIcon(backIcon);
-            player1.setIcon(backIcon);
+            if(!player3.getText().equals("Finished")){
+                player3.setIcon(backIcon);
+            }
+            if(!player2.getText().equals("Finished")){
+                player2.setIcon(backIcon);
+            }
+            if(!player1.getText().equals("Finished")){
+                player1.setIcon(backIcon);
+            }
 
             if(id == 0){
                 return;
@@ -207,14 +213,14 @@ public class BigTwo {
 
             changedLabel.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
             for(Player player: listPlayers){
-                int size = player.getCardsAvailable().size();
                 if(player.getId() == id){
+                    int size = player.getCardsAvailable().size();
                     changedLabel.setText(Integer.toString(size));
+                    if(size == 0){
+                        changedLabel.setIcon(null);
+                        changedLabel.setText("Finished");
+                    }
                     break;
-                }
-                if(size == 0){
-                    changedLabel.setIcon(null);
-                    changedLabel.setText("FINISHED");
                 }
             }
         }
@@ -238,8 +244,17 @@ public class BigTwo {
         }
 
         public void playGUI() throws InterruptedException{
+            while(true){
+                if(findStraightPairs(listPlayers.get(0).getCardsAvailable(), 4, 2).size() != 0 &&
+                findStraightPairs(listPlayers.get(1).getCardsAvailable(), 3, 2).size() != 0){
+                    break;
+                }
+                    reset();
+                }
+
             initGUI();
-    
+            prevCards.setBorder(new CompoundBorder(prevCards.getBorder(), new EmptyBorder(secondLine.getHeight()/2-50,0,0,0)));
+
             int winner = checkInstantWin();
             if(winner != -1){
                 previousPlayedCard = listPlayers.get(winner).getCardsAvailable();
@@ -806,6 +821,8 @@ public class BigTwo {
         return new ArrayList<>();
     }
 
+    // ! BOTS CANNOT PLAY SMD IF THERE IS A 2
+    // TODO
     private ArrayList<Card> findStraightPairs(ArrayList<Card> deck, int lengthCard, int nPairs){
         ArrayList<Card> result = new ArrayList<>();
 
@@ -860,7 +877,7 @@ public class BigTwo {
                         // Have to check if the initial of card is greater than prev deck
                         // It's smaller
                         if(count == lengthCard){
-                            if(i < symbolRank.indexOf(prevStartSymbol)){
+                            if(i < symbolRank.indexOf(prevStartSymbol) && !prevStartSymbol.equals("2")){
                                 continue;
                             }
                         } 
@@ -903,7 +920,8 @@ public class BigTwo {
                         }
                     }
                     
-                    if(count == lengthCard && previousPlayedCard.size() != 0){
+                    if(count == lengthCard && previousPlayedCard.size() != 0 && 
+                    !(previousPlayedCard.get(previousPlayedCard.size()-1).getSymbol()).equals("2")){
                         // Check if the last symbol is greater than the last of the prev
                         Card prevLastCard = previousPlayedCard.get(previousPlayedCard.size()-1);
                         if(result.get(result.size()-1).compareTo(prevLastCard) < 0){
@@ -949,7 +967,6 @@ public class BigTwo {
                 }
             }
         }
-        System.out.println(Arrays.toString(summaryBotCards));
 
         if(result.size() != 0){
             return result;
@@ -1117,6 +1134,7 @@ public class BigTwo {
                 if(currentState.equals("QUAD")){
                     if(botPlayedCards.size() == 0){
                         botPlayedCards = findStraightPairs(botCards, 4, 2);
+                        currentState = "SMD_4";
                     }
                 }
 
@@ -1137,12 +1155,22 @@ public class BigTwo {
                         // Next check if there is a 4-pair smack down
                         if(botPlayedCards.size() == 0){
                             botPlayedCards = findStraightPairs(botCards, 4, 2);
+                            if(botPlayedCards.size() != 0){
+                                currentState = "SMD_4";
+                                break;
+                            }
+                        } else {
+                            currentState = "QUAD";
+                            break;
                         }
 
                         // Check only smack down single card
                         // Next check 3-pair smack down
                         if((botPlayedCards.size() == 0) && singleTwo){
                             botPlayedCards = findStraightPairs(botCards, 3, 2);
+                            if(botPlayedCards.size() != 0){
+                                currentState = "SMD_3";
+                            }
                         }
                     }
                 }
@@ -1182,6 +1210,9 @@ public class BigTwo {
                         // Can still smack back 3 pairs by 4-pair smack down
                         } else {
                             botPlayedCards = findStraightPairs(botCards, 4, 2);
+                            if(botPlayedCards.size() != 0){
+                                currentState = "SMD_4";
+                            }
                         }
                     }
                 }
@@ -1203,6 +1234,8 @@ public class BigTwo {
         // ! -> Check last cards of the deck
         // * FIXED
 
+        String checkCardsState = stateOfCards(checkCards);
+
         // Deck of cards cannot be equal
         // -> Cannot return 0
         
@@ -1215,7 +1248,30 @@ public class BigTwo {
         if(previousPlayedCard.size() == 0){
             return 1;
         }
+
+        // Can smack down a 2 with smack down or quad
+        boolean singleTwo = (currentState.equals("SINGLE") &&
+        previousPlayedCard.get(0).getSymbol().equals("2"));
+        boolean pairTwo = (currentState.equals("PAIR") &&
+        previousPlayedCard.get(0).getSymbol().equals("2") &&
+        previousPlayedCard.get(1).getSymbol().equals("2"));
+
+        if(singleTwo || pairTwo){
+            if(checkCardsState.equals("QUAD")){
+                return 1;
+            }
+            if(checkCardsState.contains("SMD")){
+                int num = Integer.parseInt(checkCardsState.substring(4));
+                if(singleTwo && num >= 3){
+                    return 1;
+                }
+                if(pairTwo && num >= 4){
+                    return 1;
+                }
+            }
+        }
         
+
         return checkCards.get(checkCards.size()-1).compareTo(previousPlayedCard.get(previousPlayedCard.size()-1));
     }
 
@@ -1228,7 +1284,8 @@ public class BigTwo {
             // Check if last card was a 2
             if(previousPlayedCard.get(0).getSymbol().equals("2")){
                 // Check if player plays a smack down
-                if(playerCardsState.contains("SMD")){
+                if(playerCardsState.contains("SMD") || 
+                    playerCardsState.equals("QUAD")){
                     checkSmacking = true;
                 }
             }
@@ -1261,12 +1318,16 @@ public class BigTwo {
 
                     // Check if a player wants to smack down pair of 2
                     // Only valid if the smack down sequence is greater than 3 pairs
+                    
+                    if(playerCardsState.contains("SMD")){
+                        String[] stateWithNumPlayer = playerCardsState.split("_");
+                        int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
+                        if(numPlayer >= 4){
+                            checkSmacking = true;
+                        }
+                    }
 
-                    String[] stateWithNumPlayer = playerCardsState.split("_");
-                    int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
-
-                    if((playerCardsState.contains("SMD") && numPlayer >= 4) ||
-                        playerCardsState.equals("QUAD")){
+                    if(playerCardsState.equals("QUAD")){
                         checkSmacking = true;
                     }
                 }
