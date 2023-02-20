@@ -20,16 +20,23 @@ public class BigTwo {
         private JButton playBtn, skipBtn;
         private JFrame frame;
         private final int NUM_CARD_OFFSET = 10;
+        private final int ICON_TEXT_GAP = 28;
+        private final int INSTANT_WIN_OFFSET = 50;
+        private int originTextPos;
+        private final ImageIcon activedIcon = new ImageIcon(imgDir + "/purple_back.png");
 
         private final Font numCardFont = new Font(Font.SANS_SERIF, Font.BOLD, 20);
-        private final Color bgColor = new Color(1, 2, 33);
+        private final Color bgColor = new Color(31, 23, 59);
         private final Color playBtnColor = new Color(10, 115, 115);
         private final Color skipBtnColor = new Color(237, 170, 37);
-        private final Color disabledColor = new Color(183, 191, 153);
+        private final Color disabledColor = new Color(202, 202, 202);
         private final Color textColor = new Color(242, 242, 242);
         private final Color cardSelectedBgColor = new Color(35, 123, 166);
         private final Color deckColor = new Color(242, 178, 99);
         private final Color tableColor = new Color(133, 237, 172);
+        private final Color instantWinColor = new Color(69, 196, 176);
+        private final Color finishedColor = new Color(10, 115, 115);
+        private final Color skipColor = new Color(237, 170, 37);
 
         public GUI(){
             this.prevCards = new JPanel();
@@ -124,11 +131,11 @@ public class BigTwo {
             player2.setFont(numCardFont);
             player3.setFont(numCardFont);
 
-            int movePixel = (-backIcon.getIconWidth()/2)-NUM_CARD_OFFSET;
-
-            player1.setIconTextGap(movePixel);
-            player2.setIconTextGap(movePixel);
-            player3.setIconTextGap(movePixel);
+            originTextPos = (-backIcon.getIconWidth()/2)-NUM_CARD_OFFSET;
+    
+            player1.setIconTextGap(originTextPos);
+            player2.setIconTextGap(originTextPos);
+            player3.setIconTextGap(originTextPos);
 
             firstLine.add(player1);
             firstLine.setBackground(bgColor);
@@ -180,6 +187,22 @@ public class BigTwo {
             frame.setVisible(true);
         }
 
+        private JLabel idToLabel(int id){
+            int changedID = id;
+            if((players == 2 && id == 1)){
+                changedID = 2;
+            } else if(players == 3){
+                changedID += 1;
+            }
+
+            if(changedID == 1){
+                return player3;
+            } else if(changedID == 2){
+                return player1;
+            }
+            return player2;
+        }
+
         private void updateCurrentPlayer(int id){
             if(!player3.getText().equals("Finished")){
                 player3.setIcon(backIcon);
@@ -194,31 +217,20 @@ public class BigTwo {
             if(id == 0){
                 return;
             }
-            int changedID = id;
-            if((players == 2 && id == 1)){
-                changedID = 2;
-            } else if(players == 3){
-                changedID += 1;
-            }
             
-            JLabel changedLabel;
+            JLabel changedLabel = idToLabel(id);
 
-            if(changedID == 1){
-                changedLabel = player3;
-            } else if(changedID == 2){
-                changedLabel = player1;
-            } else {
-                changedLabel = player2;
-            }
-
-            changedLabel.setIcon(new ImageIcon(imgDir + "/blue_back.png"));
+            changedLabel.setIcon(activedIcon);
             for(Player player: listPlayers){
                 if(player.getId() == id){
                     int size = player.getCardsAvailable().size();
                     changedLabel.setText(Integer.toString(size));
+                    changedLabel.setIconTextGap(originTextPos);
+                    changedLabel.setForeground(textColor);
                     if(size == 0){
                         changedLabel.setIcon(null);
                         changedLabel.setText("Finished");
+                        changedLabel.setForeground(finishedColor);
                     }
                     break;
                 }
@@ -244,19 +256,17 @@ public class BigTwo {
         }
 
         public void playGUI() throws InterruptedException{
-            while(true){
-                if(findStraightPairs(listPlayers.get(0).getCardsAvailable(), 4, 2).size() != 0 &&
-                findStraightPairs(listPlayers.get(1).getCardsAvailable(), 3, 2).size() != 0){
-                    break;
-                }
-                    reset();
-                }
-
             initGUI();
             prevCards.setBorder(new CompoundBorder(prevCards.getBorder(), new EmptyBorder(secondLine.getHeight()/2-50,0,0,0)));
 
             int winner = checkInstantWin();
             if(winner != -1){
+                JLabel winnerLabel = idToLabel(winner);
+
+                winnerLabel.setText("INSTANT WIN");
+                winnerLabel.setIconTextGap(originTextPos - INSTANT_WIN_OFFSET);
+                winnerLabel.setForeground(instantWinColor);
+
                 previousPlayedCard = listPlayers.get(winner).getCardsAvailable();
                 loadPrevCard();
                 System.out.println("WINNER");
@@ -343,6 +353,11 @@ public class BigTwo {
                     
                     // Skip
                     if(botChose.size() == 0){
+                        JLabel playerLabel = idToLabel(curPlayer.getId());
+                        playerLabel.setText("Skipped");
+                        playerLabel.setIconTextGap(playerLabel.getIconTextGap()- ICON_TEXT_GAP);
+                        playerLabel.setForeground(skipColor);
+
                         skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
                     } else {
                         skipBtn.setActionCommand("0");
@@ -387,7 +402,7 @@ public class BigTwo {
                     displayMessage(pronoun + " finished in " + place + postFix + " place");
     
                     listPlayers.remove(currentTurn);
-                    currentTurn = Math.max(currentTurn-1, 0);
+                    currentTurn = currentTurn-1;
                 }
                 currentTurn = (currentTurn+1)%(listPlayers.size());
             }
