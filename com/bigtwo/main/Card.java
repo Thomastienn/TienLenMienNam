@@ -1,3 +1,5 @@
+package com.bigtwo.main;
+
 public class Card {
     private String symbol;
     private String shape;

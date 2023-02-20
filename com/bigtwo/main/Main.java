@@ -1,3 +1,5 @@
+package com.bigtwo.main;
+
 import javax.swing.JOptionPane;
 
 public class Main {

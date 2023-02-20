@@ -1,10 +1,11 @@
+package com.bigtwo.main;
+
 import java.util.ArrayList;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
 import java.util.Scanner;
-import java.util.Arrays;
 
 public class BigTwo {
     private class GUI {
@@ -63,7 +64,7 @@ public class BigTwo {
 
         // Get the image directory from the object
         private String cardToDir(Card card) {
-            return System.getProperty("user.dir").replace("\\", "/") + "/img/" + card.toString() + ".png";
+            return imgDir + "/" + card.toString() + ".png";
         }
 
         private void loadPrevCard() {
@@ -472,6 +473,7 @@ public class BigTwo {
             } while (true);
             disableBtns();
             displayMessage("Finished");
+            System.exit(0);
         }
     }
 
