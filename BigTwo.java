@@ -268,6 +268,9 @@ public class BigTwo {
         private void resetGUI() {
             loadPlayerCards();
             loadPrevCard();
+            for(Player player: listPlayers){
+                updateCurrentPlayer(player.getId());
+            }
         }
 
         public void playGUI() throws InterruptedException {
@@ -284,6 +287,7 @@ public class BigTwo {
                 winnerLabel.setForeground(instantWinColor);
 
                 previousPlayedCard = listPlayers.get(winner).getCardsAvailable();
+                listPlayers.remove(winner);
                 loadPrevCard();
                 System.out.println("WINNER");
                 return;
@@ -328,6 +332,7 @@ public class BigTwo {
 
                 // Notify that a user has made a move
                 playBtn.setActionCommand("1");
+                skipPlayers.add(listPlayers.get(0));
             });
 
             // ! HAVEN'T implement if no one can play
@@ -346,14 +351,25 @@ public class BigTwo {
                     updateCurrentPlayer(curPlayer.getId());
 
                     // When everyone passes the turn
+                    // A.K.A - new turn
                     if (curPlayer.getId() == lastPlayerPlayed ||
                             Integer.parseInt(skipBtn.getActionCommand()) == listPlayers.size()) {
+
                         currentState = "ANY";
                         skipBtn.setActionCommand("0");
-                        ;
+                        skipPlayers = new ArrayList<>();
+                        
                     }
 
                     if (curPlayer.getId() == 0) {
+                        // User already skipped this turn
+                        // So the user needs to wait for a new turn
+                        if(skipPlayers.contains(listPlayers.get(0))){
+                            skipBtn.doClick();
+                            currentTurn = (currentTurn + 1) % (listPlayers.size());
+                            continue;
+                        }
+
                         enableBtns();
 
                         // Wait until user make a move
@@ -368,9 +384,22 @@ public class BigTwo {
                     } else {
                         disableBtns();
 
-                        Thread.sleep(1000);
-
                         ArrayList<Card> botChose = botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId());
+                        
+                        // This turn already skipped
+                        if(skipPlayers.contains(curPlayer)){
+                            JLabel playerLabel = idToLabel(curPlayer.getId());
+                            playerLabel.setText("Not Allow");
+                            playerLabel.setIconTextGap(playerLabel.getIconTextGap() - ICON_TEXT_GAP);
+                            playerLabel.setForeground(skipColor);
+                            
+                            // Update UI
+                            loadPrevCard();
+                            currentTurn = (currentTurn + 1) % (listPlayers.size());
+                            continue;
+                        }
+
+                        Thread.sleep(1000);
 
                         // Skip
                         if (botChose.size() == 0) {
@@ -381,6 +410,8 @@ public class BigTwo {
 
                             skipBtn.setActionCommand(
                                     Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
+
+                            skipPlayers.add(curPlayer);
                         } else {
                             skipBtn.setActionCommand("0");
                         }
@@ -475,6 +506,7 @@ public class BigTwo {
 
     private ArrayList<Card> previousPlayedCard = new ArrayList<>();
     private ArrayList<Player> listPlayers = new ArrayList<>();
+    private ArrayList<Player> skipPlayers = new ArrayList<>();
     private ArrayList<String> allSymbolStates;
     private ArrayList<String> symbolRank;
     private ArrayList<String> shapeRank;
@@ -534,6 +566,7 @@ public class BigTwo {
     private void reset() {
         this.min = new Card("TEMP", "TEMP", 100, false);
         this.previousPlayedCard = new ArrayList<>();
+        this.skipPlayers = new ArrayList<>();
         this.listPlayers = new ArrayList<>();
         this.cards = new ArrayList<>();
         this.lastPlayerPlayed = 0;
@@ -1408,6 +1441,7 @@ public class BigTwo {
                 playMin);
     }
 
+    // !Has stopped updating and maintaining
     private void playConsole() throws InterruptedException {
         // ! Optimize purposes
         // ! DEBUG Performance
@@ -1622,6 +1656,7 @@ public class BigTwo {
             GUI gui = new GUI();
             gui.playGUI();
         } else {
+            // !Has stopped updating and maintaining
             playConsole();
         }
 
