@@ -8,23 +8,24 @@ import java.util.Arrays;
 
 public class BigTwo {
     private class GUI {
+        // *GUI components
         private final String currentWorkingDir = System.getProperty("user.dir").replace("\\", "/");
         private final java.awt.GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         private JPanel mainPanel, firstLine, secondLine, thirdLine, prevCards, btns, playerCards;
         private final int screenHeight = device.getDisplayMode().getHeight();
         private final int screenWidth = device.getDisplayMode().getWidth();
         private final String imgDir = currentWorkingDir + "/img";
-        private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
-        private ArrayList<Card> selectedCards;
-        private JLabel player1, player2, player3;
-        private JButton playBtn, skipBtn;
-        private JFrame frame;
-        private final int NUM_CARD_OFFSET = 10;
-        private final int ICON_TEXT_GAP = 28;
-        private final int INSTANT_WIN_OFFSET = 50;
-        private int originTextPos;
         private final ImageIcon activedIcon = new ImageIcon(imgDir + "/purple_back.png");
+        private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
+        private JLabel player1, player2, player3;
+        private ArrayList<Card> selectedCards;
+        private JButton playBtn, skipBtn;
+        private int originTextPos;
+        private JFrame frame;
 
+        
+        // *DESIGN PURPOSES
+        // Constants colors and fonts
         private final Font numCardFont = new Font(Font.SANS_SERIF, Font.BOLD, 20);
         private final Color bgColor = new Color(31, 23, 59);
         private final Color playBtnColor = new Color(10, 115, 115);
@@ -37,6 +38,11 @@ public class BigTwo {
         private final Color instantWinColor = new Color(69, 196, 176);
         private final Color finishedColor = new Color(10, 115, 115);
         private final Color skipColor = new Color(237, 170, 37);
+
+        // *OFFSET constants
+        private final int NUM_CARD_OFFSET = 10;
+        private final int ICON_TEXT_GAP = 28;
+        private final int INSTANT_WIN_OFFSET = 50;
 
         public GUI(){
             this.prevCards = new JPanel();
@@ -55,6 +61,7 @@ public class BigTwo {
             this.btns = new JPanel();
         }
 
+        // Get the image directory from the object
         private String cardToDir(Card card){
             return System.getProperty("user.dir").replace("\\", "/") + "/img/" + card.toString() + ".png";
         }
@@ -74,6 +81,7 @@ public class BigTwo {
         private void loadPlayerCards(){
             playerCards.removeAll();
             for(Player player: listPlayers){
+                // Load user cards on GUI
                 if(player.getId() == 0){
                     ArrayList<Card> userCards = player.getCardsAvailable();
                     for(int i = 0; i< userCards.size(); i++){
@@ -92,11 +100,13 @@ public class BigTwo {
                             int idx = selectedCards.indexOf(selectedCard);
                             final int OFFSET = 8;
     
+                            // If the cards not selected yet
                             if(idx < 0){
                                 selectedCards.add(selectedCard);
                                 cardBtn.setBackground(cardSelectedBgColor);
                                 cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()-OFFSET);
                             } else {
+                                // REmove from selected cards
                                 selectedCards.remove(idx); 
                                 cardBtn.setBackground(deckColor);
                                 cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()+OFFSET);
@@ -252,7 +262,12 @@ public class BigTwo {
         }
     
         private void displayMessage(String mess){
-            JOptionPane.showMessageDialog(null, mess, "Game message", JOptionPane.NO_OPTION);
+            JOptionPane.showMessageDialog(frame, mess, "Game message", JOptionPane.NO_OPTION);
+        }
+
+        private void resetGUI(){
+            loadPlayerCards();
+            loadPrevCard();
         }
 
         public void playGUI() throws InterruptedException{
@@ -319,9 +334,13 @@ public class BigTwo {
             // ! Then the player the next turn can play ANY
             // *CONSOLE FIXED
             // *GUI FIXED
+
+            // ! HAVEN't implement multiple rounds
+            // *FINISHED
     
-            while(!checkFinish()){
-                System.out.println(currentTurn);
+            do {
+                while(!checkFinish()){
+                    System.out.println(currentTurn);
                 Player curPlayer = listPlayers.get(currentTurn);
                 updateCurrentPlayer(curPlayer.getId());
                 
@@ -357,7 +376,7 @@ public class BigTwo {
                         playerLabel.setText("Skipped");
                         playerLabel.setIconTextGap(playerLabel.getIconTextGap()- ICON_TEXT_GAP);
                         playerLabel.setForeground(skipColor);
-
+                        
                         skipBtn.setActionCommand(Integer.toString(Integer.parseInt(skipBtn.getActionCommand()) + 1));
                     } else {
                         skipBtn.setActionCommand("0");
@@ -367,11 +386,11 @@ public class BigTwo {
                     
                     // Update UI
                     loadPrevCard();
-
+                    
                     Thread.sleep(1000);
                 }
                 updateCurrentPlayer(curPlayer.getId());
-    
+                
                 // If current player plays all the cards
                 if(checkWin(curPlayer)){
                     String pronoun = "You";
@@ -380,7 +399,7 @@ public class BigTwo {
                     } else {
                         pronoun = "Player " + curPlayer.getId();
                     }
-    
+                    
                     int place = ((players-listPlayers.size())+1);
                     String postFix = "";
                     
@@ -390,22 +409,31 @@ public class BigTwo {
                         break;
                         case 2:
                         postFix = "nd";
-                            break;
+                        break;
                         case 3:
                             postFix = "rd";
                             break;
-                        default:
+                            default:
                             postFix = "th";
                             break;
+                        }
+                        
+                        displayMessage(pronoun + " finished in " + place + postFix + " place");
+                        
+                        listPlayers.remove(currentTurn);
+                        currentTurn = currentTurn-1;
                     }
-                    
-                    displayMessage(pronoun + " finished in " + place + postFix + " place");
-    
-                    listPlayers.remove(currentTurn);
-                    currentTurn = currentTurn-1;
-                }
                 currentTurn = (currentTurn+1)%(listPlayers.size());
-            }
+                }
+                int result = JOptionPane.showConfirmDialog(frame,"Do you want to continue?", "C'mon", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if(result == JOptionPane.YES_OPTION){
+                    round += 1;
+                    reset();
+                    resetGUI();
+                } else {
+                    break;
+                }
+            } while(true);
             disableBtns();
             displayMessage("Finished");
         }
@@ -1111,10 +1139,10 @@ public class BigTwo {
                         }
                     }
 
-                    // If there is less than 3 cards and state is ANY
+                    // If there is less than 2 cards and state is ANY
                     // Then play the largest card
                     // So higher chance that the bot wins
-                    if(i == 1 && (botCards.size() <= 3)){
+                    if(i == 1 && (botCards.size() <= 2)){
                         botPlayedCards.add(botCards.get(botCards.size()-1));
                         currentState = "SINGLE";
                         break;
@@ -1579,8 +1607,16 @@ public class BigTwo {
         //playConsole();
         
         // Play by user-friendly GUI
-        GUI gui = new GUI();
-        gui.playGUI();
+        // GUI gui = new GUI();
+        // gui.playGUI();
+
+        int result = JOptionPane.showConfirmDialog(null,"Do you want to play with GUI?", "GET GO", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if(result == JOptionPane.YES_OPTION){
+            GUI gui = new GUI();
+            gui.playGUI();
+        } else {
+            playConsole();
+        }
 
         // Initialize GUI
         // cards = new ArrayList<>();
