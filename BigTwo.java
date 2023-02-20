@@ -822,7 +822,7 @@ public class BigTwo {
     }
 
     // ! BOTS CANNOT PLAY SMD IF THERE IS A 2
-    // TODO
+    // *FIXED
     private ArrayList<Card> findStraightPairs(ArrayList<Card> deck, int lengthCard, int nPairs){
         ArrayList<Card> result = new ArrayList<>();
 
