@@ -332,6 +332,9 @@ public class BigTwo {
 
                 // Notify that a user has made a move
                 playBtn.setActionCommand("1");
+
+                // This turns the user pass
+                // So he needs to wait until new turn
                 skipPlayers.add(listPlayers.get(0));
             });
 
@@ -358,7 +361,7 @@ public class BigTwo {
                         currentState = "ANY";
                         skipBtn.setActionCommand("0");
                         skipPlayers = new ArrayList<>();
-                        
+
                     }
 
                     if (curPlayer.getId() == 0) {
@@ -384,27 +387,21 @@ public class BigTwo {
                     } else {
                         disableBtns();
 
-                        ArrayList<Card> botChose = botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId());
-                        
-                        // This turn already skipped
-                        if(skipPlayers.contains(curPlayer)){
-                            JLabel playerLabel = idToLabel(curPlayer.getId());
-                            playerLabel.setText("Not Allow");
-                            playerLabel.setIconTextGap(playerLabel.getIconTextGap() - ICON_TEXT_GAP);
-                            playerLabel.setForeground(skipColor);
-                            
-                            // Update UI
-                            loadPrevCard();
-                            currentTurn = (currentTurn + 1) % (listPlayers.size());
-                            continue;
-                        }
-
                         Thread.sleep(1000);
 
-                        // Skip
+                        ArrayList<Card> botChose = botsPlayed(curPlayer.getCardsAvailable(), curPlayer.getId());
+                        String textMess = "Skipped";
+
+                        // This turn already skipped
+                        if(skipPlayers.contains(curPlayer)){
+                            botChose = new ArrayList<>();
+                            textMess = "Not allow";
+                        }
+
+                        // Skip or not allow
                         if (botChose.size() == 0) {
                             JLabel playerLabel = idToLabel(curPlayer.getId());
-                            playerLabel.setText("Skipped");
+                            playerLabel.setText(textMess);
                             playerLabel.setIconTextGap(playerLabel.getIconTextGap() - ICON_TEXT_GAP);
                             playerLabel.setForeground(skipColor);
 
