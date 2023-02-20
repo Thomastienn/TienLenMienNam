@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.*;
+
 import java.util.Scanner;
 import java.util.Arrays;
 
@@ -18,7 +20,16 @@ public class BigTwo {
         private JButton playBtn, skipBtn;
         private JFrame frame;
         private final int NUM_CARD_OFFSET = 10;
+
         private final Font numCardFont = new Font(Font.SANS_SERIF, Font.BOLD, 20);
+        private final Color bgColor = new Color(1, 2, 33);
+        private final Color playBtnColor = new Color(10, 115, 115);
+        private final Color skipBtnColor = new Color(237, 170, 37);
+        private final Color disabledColor = new Color(183, 191, 153);
+        private final Color textColor = new Color(242, 242, 242);
+        private final Color cardSelectedBgColor = new Color(35, 123, 166);
+        private final Color deckColor = new Color(242, 178, 99);
+        private final Color tableColor = new Color(133, 237, 172);
 
         public GUI(){
             this.prevCards = new JPanel(new GridLayout(0, Math.max(previousPlayedCard.size(), 1)));
@@ -66,21 +77,21 @@ public class BigTwo {
                         
                         cardBtn.setIcon(cardImg);
                         cardBtn.setBorderPainted(false); 
-                        cardBtn.setBackground(Color.BLACK);
+                        cardBtn.setBackground(deckColor);
                         cardBtn.setActionCommand(Integer.toString(i));
     
                         cardBtn.addActionListener(e -> {
                             Card selectedCard = userCards.get(Integer.parseInt(cardBtn.getActionCommand()));
                             int idx = selectedCards.indexOf(selectedCard);
-                            final int OFFSET = 10;
+                            final int OFFSET = 8;
     
                             if(idx < 0){
                                 selectedCards.add(selectedCard);
-                                cardBtn.setBackground(Color.YELLOW);
+                                cardBtn.setBackground(cardSelectedBgColor);
                                 cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()-OFFSET);
                             } else {
                                 selectedCards.remove(idx); 
-                                cardBtn.setBackground(Color.BLACK);
+                                cardBtn.setBackground(deckColor);
                                 cardBtn.setLocation(cardBtn.getX(), cardBtn.getY()+OFFSET);
                             }
                         });
@@ -96,10 +107,18 @@ public class BigTwo {
             player1.setText("13");
             player2.setText("13");
             player3.setText("13");
+
+            int margin = 50;
+            int topMargin = 20;
+            int toTableMargin = 25;
+
+            player1.setBorder(new CompoundBorder(player1.getBorder(), new EmptyBorder(topMargin,0,toTableMargin,0)));
+            player2.setBorder(new CompoundBorder(player2.getBorder(), new EmptyBorder(0,margin,0,toTableMargin)));
+            player3.setBorder(new CompoundBorder(player3.getBorder(), new EmptyBorder(0,toTableMargin,0,margin)));
             
-            player1.setForeground(Color.WHITE);
-            player2.setForeground(Color.WHITE);
-            player3.setForeground(Color.WHITE);
+            player1.setForeground(textColor);
+            player2.setForeground(textColor);
+            player3.setForeground(textColor);
 
             player1.setFont(numCardFont);
             player2.setFont(numCardFont);
@@ -112,11 +131,11 @@ public class BigTwo {
             player3.setIconTextGap(movePixel);
 
             firstLine.add(player1);
-            firstLine.setBackground(Color.RED);
+            firstLine.setBackground(bgColor);
     
             // Load previous card on the deck
             loadPrevCard();
-            prevCards.setBackground(Color.GREEN);
+            prevCards.setBackground(tableColor);
     
             if(players >= 3){
                 secondLine.add(player2, BorderLayout.WEST);
@@ -125,21 +144,27 @@ public class BigTwo {
             if(players == 4){
                 secondLine.add(player3, BorderLayout.EAST);
             }
-            secondLine.setBackground(Color.YELLOW);
+            secondLine.setBackground(bgColor);
     
-            playBtn.setBackground(Color.GREEN);
+            playBtn.setBackground(playBtnColor);
+            playBtn.setForeground(textColor);
+            playBtn.setFont(numCardFont);
             playBtn.setActionCommand("0");
             playBtn.setPreferredSize(new Dimension(200,70));
+
+            skipBtn.setBackground(skipBtnColor);
+            skipBtn.setForeground(textColor);
+            skipBtn.setFont(numCardFont);
             skipBtn.setPreferredSize(new Dimension(200,70));
             skipBtn.setActionCommand("0");
     
             btns.add(playBtn);
             btns.add(skipBtn);
-            btns.setBackground(Color.MAGENTA);
+            btns.setBackground(bgColor);
             
             // Load main player cards
             loadPlayerCards();
-            playerCards.setBackground(Color.BLACK);
+            playerCards.setBackground(deckColor);
     
             thirdLine.add(playerCards, BorderLayout.SOUTH);
             thirdLine.add(btns, BorderLayout.NORTH);
@@ -197,15 +222,15 @@ public class BigTwo {
         private void disableBtns(){
             playBtn.setEnabled(false);
             skipBtn.setEnabled(false);
-            playBtn.setBackground(Color.GRAY);
-            skipBtn.setBackground(Color.GRAY);
+            playBtn.setBackground(disabledColor);
+            skipBtn.setBackground(disabledColor);
         }
     
         private void enableBtns(){
             playBtn.setEnabled(true);
             skipBtn.setEnabled(true);
-            playBtn.setBackground(Color.GREEN);
-            skipBtn.setBackground(Color.RED);
+            playBtn.setBackground(playBtnColor);
+            skipBtn.setBackground(skipBtnColor);
         }
     
         private void displayMessage(String mess){
