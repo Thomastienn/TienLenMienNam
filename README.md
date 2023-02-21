@@ -5,6 +5,8 @@
 2. `git clone https://github.com/Thomastienn/TienLenMienNam`
 3. Open your IDE
 4. Import everything in the folder TienLenMienNam
+5. Change images directory (constant: imgDir) if there is a top-level folder (Details in src code)
+6. Run and experience
 
 ## How to contribute
 1. Navigate to the project folder `cd <path to the project>`
