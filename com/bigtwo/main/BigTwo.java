@@ -239,7 +239,7 @@ public class BigTwo {
                     changedLabel.setForeground(textColor);
                     if (size == 0) {
                         changedLabel.setIcon(null);
-                        changedLabel.setText("Finished");
+                        changedLabel.setText(listPlayers.size()!=1?"Finished":"Lose");
                         changedLabel.setForeground(finishedColor);
                     }
                     break;
@@ -459,6 +459,24 @@ public class BigTwo {
                     }
                     currentTurn = (currentTurn + 1) % (listPlayers.size());
                 }
+                // Show the loser cards
+                Player loser = listPlayers.get(0);
+                previousPlayedCard = loser.getCardsAvailable();
+                loadPrevCard();
+
+                loser.setCardsAvailable(new ArrayList<>());
+                int id = loser.getId();
+                String pronoun = "Player " + id + " is";
+                if(id == 0){
+                    pronoun = "You are";
+                    loadPlayerCards();
+                } else {
+                    updateCurrentPlayer(id);
+                }
+                displayMessage(pronoun + " the loser");
+
+                Thread.sleep(1000);
+
                 int result = JOptionPane.showConfirmDialog(frame, "Do you want to continue?", "C'mon",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (result == JOptionPane.YES_OPTION) {
