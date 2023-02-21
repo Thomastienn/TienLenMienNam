@@ -1264,10 +1264,10 @@ public class BigTwo {
             case "PAIR":
             case "TRIP":
             case "QUAD":
-                // If there is less than 3 cards and state is ANY
+                // If there is less than 2 cards and state is ANY
                 // Then play the largest card
                 // So higher chance that the bot wins
-                if (currentState.equals("SINGLE") && (botCards.size() <= 3)) {
+                if (currentState.equals("SINGLE") && (botCards.size() <= 2)) {
                     Card playCard = botCards.get(botCards.size() - 1);
                     if (playCard.compareTo(previousPlayedCard.get(0)) > 0) {
                         botPlayedCards.add(playCard);
