@@ -18,7 +18,7 @@ package com.bigtwo.main;
 * ----------------------------------------------------------------------------------
 * Future Enhancements: 
 * -------------------- 
-* 1. 
+* 1. To allow input about number of players via parameterization (Done 20-02-2023)
 * 								
 */ 
 

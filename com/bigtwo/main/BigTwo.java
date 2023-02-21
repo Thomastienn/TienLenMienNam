@@ -43,7 +43,12 @@ package com.bigtwo.main;
 * ----------------------------------------------------------------------------------
 * Future Enhancements: 
 * -------------------- 
-* 1. 
+* 1. Creating background and add some button 
+* 2. Get the image directory from the object (Done 20-02-2023)
+* 3. Implement players card  (Done 17-02-2023)
+* 4. Load previous card on the deck (Done 18-02-2023)
+* 5. Update UI of player cards (Done 18-02-2023)
+* 6. To be complete
 * 								
 */
 

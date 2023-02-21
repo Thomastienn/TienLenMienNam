@@ -17,7 +17,8 @@ package com.bigtwo.main;
 * ----------------------------------------------------------------------------------
 * Future Enhancements: 
 * -------------------- 
-* 1. 
+* 1. Implement attributes (Done 13-02-2023)
+* 2. To be complete
 * 								
 */ 
 
