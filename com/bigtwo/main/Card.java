@@ -1,5 +1,26 @@
 package com.bigtwo.main;
 
+/* ---------------------------------------------------------------------------------
+* 		Program Name: Card.java 
+* 		Date Written: February 13th, 2023
+* 			  Author: Thomas Vu
+* 
+*            Purpose: 1. To implement Card class. 
+*                      
+* ----------------------------------------------------------------------------------
+* Modification History: 
+* ----------------------------------------------------------------------------------
+* Date			Person	CSR#	Description
+* 2023-02-13	TV 		1.01	Initial Version 
+* 2023-02-13	TV 		1.02	Implement attributes and getters setters 
+* 2023-02-20	TV 		1.03	Apply industry standard 
+* ----------------------------------------------------------------------------------
+* Future Enhancements: 
+* -------------------- 
+* 1. 
+* 								
+*/ 
+
 public class Card {
     private String symbol;
     private String shape;

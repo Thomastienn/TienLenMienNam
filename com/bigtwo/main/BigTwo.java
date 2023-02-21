@@ -1,5 +1,52 @@
 package com.bigtwo.main;
 
+/* ---------------------------------------------------------------------------------
+* 		Program Name: BigTwo.java 
+* 		Date Written: February 13th, 2023
+* 			  Author: Thomas Vu
+* 
+*            Purpose: 1. To implement all the game features. 
+*                      
+* ----------------------------------------------------------------------------------
+* Modification History: 
+* ----------------------------------------------------------------------------------
+* Date			Person	CSR#	Description
+* 2023-02-13	TV 		1.01	Initial Version
+* 2023-02-15	TV 		1.02	Implement version control
+* 2023-02-15	TV 		1.03	Update parameterization findSameSymbol() function
+* 2023-02-16	TV 		1.04	Update functions: checkValid()-> more cases,
+*                               parameterize findStraightPairs(), botsPlayed()
+* 2023-02-17	TV 		1.05	Update botsPlayed() -> Can smack down 2
+* 2023-02-17	TV 		1.06	Implement more rounds
+* 2023-02-17	TV 		1.07	Delete cards if the user chooses it again
+* 2023-02-17	TV 		1.08	Improve botsPlayed() -> Smarter in some cases
+* 2023-02-17	TV 		1.09	Bots have to play cards that have the min in it
+* 2023-02-17	TV 		1.10	Player first round has to play the smallest card too
+* 2023-02-17	TV 		1.11	Encapsulate methods 
+* 2023-02-17	TV 		1.12	Add images and GUI structure
+* 2023-02-18	TV 		1.13	Add GUI and the skeleton
+* 2023-02-18	TV 		1.14	Add selected cards to a list
+* 2023-02-18	TV 		1.15	Seperate playConsole() and playGUI()
+* 2023-02-18	TV 		1.16	Control the game flow through playGUI()
+* 2023-02-19	TV 		1.17	Add case where player won the everyone skips the turn
+* 2023-02-19	TV 		1.18	Update the current player card -> Highlight the current player
+* 2023-02-19	TV 		1.19	Seperate GUI into another inner class (GUI class)
+* 2023-02-20	TV 		1.20	Cleaning the code
+* 2023-02-20	TV 		1.21	Add color and font constants
+* 2023-02-20	TV 		1.22	Implement multiple rounds for playGUI()
+* 2023-02-20	TV 		1.23	Fix overall indentation
+* 2023-02-20	TV 		1.24	Add case where a play skips the turn -> wait for a new turn
+* 2023-02-20	TV 		1.25	Reconstruct the hierarchy tree
+* 2023-02-20	TV 		1.26	Change to relative path instead of absolute path
+* 2023-02-20	TV 		1.27	Show the loser cards
+* 2023-02-20	TV 		1.28	Implement industry standard
+* ----------------------------------------------------------------------------------
+* Future Enhancements: 
+* -------------------- 
+* 1. 
+* 								
+*/ 
+
 import java.util.ArrayList;
 import java.awt.*;
 import javax.swing.*;
