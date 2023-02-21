@@ -62,6 +62,8 @@ public class BigTwo {
         private JPanel mainPanel, firstLine, secondLine, thirdLine, prevCards, btns, playerCards;
         private final int screenHeight = device.getDisplayMode().getHeight();
         private final int screenWidth = device.getDisplayMode().getWidth();
+        // ! If there is a top-level folder add its name before "com"
+        // ! Ex: Eclipse has src folder -> Change imgDir to "src/com/bigtwo/images" 
         private final String imgDir = "com/bigtwo/images";
         private final ImageIcon activedIcon = new ImageIcon(imgDir + "/purple_back.png");
         private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
