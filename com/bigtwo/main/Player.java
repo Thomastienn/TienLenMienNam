@@ -3,7 +3,7 @@ package com.bigtwo.main;
 /* ---------------------------------------------------------------------------------
 * 		Program Name: Player.java 
 * 		Date Written: February 13th, 2023
-* 			  Author: Thomas Vu
+* 			  Author: Laura Tran
 * 
 *            Purpose: 1. To implement Player class. 
 *                      
@@ -11,9 +11,9 @@ package com.bigtwo.main;
 * Modification History: 
 * ----------------------------------------------------------------------------------
 * Date			Person	CSR#	Description
-* 2023-02-13	TV 		1.01	Initial Version 
-* 2023-02-13	TV 		1.02	Implement attributes and getters setters 
-* 2023-02-20	TV 		1.03	Apply industry standard
+* 2023-02-13	LT  	1.01	Initial Version 
+* 2023-02-13	LT 		1.02	Implement attributes and getters setters 
+* 2023-02-20	LT 		1.03	Apply industry standard
 * ----------------------------------------------------------------------------------
 * Future Enhancements: 
 * -------------------- 
