@@ -45,7 +45,7 @@ package com.bigtwo.main;
 * -------------------- 
 * 1. 
 * 								
-*/ 
+*/
 
 import java.util.ArrayList;
 import java.awt.*;
@@ -286,7 +286,7 @@ public class BigTwo {
                     changedLabel.setForeground(textColor);
                     if (size == 0) {
                         changedLabel.setIcon(null);
-                        changedLabel.setText(listPlayers.size()!=1?"Finished":"Lose");
+                        changedLabel.setText(listPlayers.size() != 1 ? "Finished" : "Lose");
                         changedLabel.setForeground(finishedColor);
                     }
                     break;
@@ -315,7 +315,7 @@ public class BigTwo {
         private void resetGUI() {
             loadPlayerCards();
             loadPrevCard();
-            for(Player player: listPlayers){
+            for (Player player : listPlayers) {
                 updateCurrentPlayer(player.getId());
             }
         }
@@ -396,7 +396,7 @@ public class BigTwo {
 
             do {
                 while (!checkFinish()) {
-                    System.out.println(currentTurn);
+                    //System.out.println(currentTurn);
                     Player curPlayer = listPlayers.get(currentTurn);
                     updateCurrentPlayer(curPlayer.getId());
 
@@ -414,7 +414,7 @@ public class BigTwo {
                     if (curPlayer.getId() == 0) {
                         // User already skipped this turn
                         // So the user needs to wait for a new turn
-                        if(skipPlayers.contains(listPlayers.get(0))){
+                        if (skipPlayers.contains(listPlayers.get(0))) {
                             skipBtn.doClick();
                             currentTurn = (currentTurn + 1) % (listPlayers.size());
                             continue;
@@ -440,7 +440,7 @@ public class BigTwo {
                         String textMess = "Skipped";
 
                         // This turn already skipped
-                        if(skipPlayers.contains(curPlayer)){
+                        if (skipPlayers.contains(curPlayer)) {
                             botChose = new ArrayList<>();
                             textMess = "Not allow";
                         }
@@ -514,7 +514,7 @@ public class BigTwo {
                 loser.setCardsAvailable(new ArrayList<>());
                 int id = loser.getId();
                 String pronoun = "Player " + id + " is";
-                if(id == 0){
+                if (id == 0) {
                     pronoun = "You are";
                     loadPlayerCards();
                 } else {
@@ -959,7 +959,7 @@ public class BigTwo {
             }
 
             // ! DEBUG PURPOSES
-            System.out.println(multipleCards);
+            // System.out.println(multipleCards);
 
             if (allSameSymbol(multipleCards) &&
                     (compareToPrevCards(multipleCards) > 0)) {
