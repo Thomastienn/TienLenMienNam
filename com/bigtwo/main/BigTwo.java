@@ -10,13 +10,12 @@ import java.util.Scanner;
 public class BigTwo {
     private class GUI {
         // *GUI components
-        private final String currentWorkingDir = System.getProperty("user.dir").replace("\\", "/");
         private final java.awt.GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment()
                 .getDefaultScreenDevice();
         private JPanel mainPanel, firstLine, secondLine, thirdLine, prevCards, btns, playerCards;
         private final int screenHeight = device.getDisplayMode().getHeight();
         private final int screenWidth = device.getDisplayMode().getWidth();
-        private final String imgDir = currentWorkingDir + "/com/bigtwo/images";
+        private final String imgDir = "com/bigtwo/images";
         private final ImageIcon activedIcon = new ImageIcon(imgDir + "/purple_back.png");
         private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
         private JLabel player1, player2, player3;

@@ -1,8 +1,7 @@
 package com.bigtwo.main;
 
-import java.awt.Color;
+import java.io.File;
 
-import javax.swing.*;
 public class test {
     public static void main(String[] args) {
         // JFrame frame = new JFrame("My First GUI");
@@ -14,8 +13,8 @@ public class test {
 
         // frame.getContentPane().add(button); // Adds Button to content pane of frame
         // frame.setVisible(true);
+        File file = new File("com/bigtwo/images/2D.png");
 
-        String test = "SMD_4";
-        System.out.println(test.substring(3));
+        System.out.println(file.getAbsolutePath());
     }
 }
