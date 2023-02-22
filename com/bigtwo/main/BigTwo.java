@@ -41,6 +41,7 @@ package com.bigtwo.main;
 * 2023-02-20	TV 		1.27	Show the loser cards
 * 2023-02-20	TV 		1.28	Implement industry standard
 * 2023-02-21	LT 		1.29	Add future enhancements
+* 2023-02-21	TV		1.30	Add a reset button
 * ----------------------------------------------------------------------------------
 * Future Enhancements: 
 * -------------------- 
@@ -49,7 +50,8 @@ package com.bigtwo.main;
 * 3. Implement players card  (Done 17-02-2023)
 * 4. Load previous card on the deck (Done 18-02-2023)
 * 5. Update UI of player cards (Done 18-02-2023)
-* 6. To be complete
+* 6. If the player wins in first place, if there is a player
+*    whoose their cards are still 13 then the player is lose
 * 								
 */
 
