@@ -40,7 +40,7 @@ public class Main {
         String players = JOptionPane.showInputDialog("How many players do you want? (2-4)", "4");
 
         try {
-            BigTwo game = new BigTwo(Integer.parseInt(players));
+            BigTwo game = new BigTwo(Integer.parseInt(players), programVersion);
             game.run();
         } catch (Exception e) {
             System.out.println(e);

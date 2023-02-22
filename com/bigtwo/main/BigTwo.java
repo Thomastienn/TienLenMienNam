@@ -62,7 +62,7 @@ import javax.swing.border.*;
 
 import java.util.Scanner;
 
-public class BigTwo {
+public class BigTwo {   
     private class GUI {
         // *GUI components
         private final java.awt.GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -104,12 +104,12 @@ public class BigTwo {
         private final int ICON_TEXT_GAP = 28;
         private final int INSTANT_WIN_OFFSET = 50;
 
-        public GUI() {
+        public GUI(String version) {
             this.prevCards = new JPanel();
             this.mainPanel = new JPanel(new BorderLayout());
             this.secondLine = new JPanel(new BorderLayout());
             this.thirdLine = new JPanel(new BorderLayout());
-            this.frame = new JFrame("Big Two");
+            this.frame = new JFrame("Big Two " + version);
             this.resetBtn = new JButton("Reset");
             this.playBtn = new JButton("Play");
             this.skipBtn = new JButton("Skip");
@@ -617,8 +617,9 @@ public class BigTwo {
     private Scanner sc;
     private int round;
     private Card min;
+    private String version;
 
-    public BigTwo(int players) {
+    public BigTwo(int players, String version) {
         // Set players in range 2 - 4 players
         players = Math.min(Math.max(players, 2), 4);
 
@@ -629,6 +630,7 @@ public class BigTwo {
         this.players = players;
         this.currentTurn = 0;
         this.round = 0;
+        this.version = version;
 
         init();
         reset();
@@ -1752,7 +1754,7 @@ public class BigTwo {
         int result = JOptionPane.showConfirmDialog(null, "Do you want to play with GUI?", "GET GO",
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (result == JOptionPane.YES_OPTION) {
-            GUI gui = new GUI();
+            GUI gui = new GUI(version);
             gui.playGUI();
         } else {
             // !Has stopped updating and maintaining
