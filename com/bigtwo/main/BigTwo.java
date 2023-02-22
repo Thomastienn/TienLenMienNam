@@ -79,7 +79,7 @@ public class BigTwo {
         private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
         private JLabel player1, player2, player3;
         private ArrayList<Card> selectedCards;
-        private JButton playBtn, skipBtn, resetBtn;
+        private JButton playBtn, skipBtn, resetBtn, pauseBtn;
         private int originTextPos;
         private JFrame frame;
 
@@ -98,6 +98,7 @@ public class BigTwo {
         private final Color finishedColor = new Color(10, 115, 115);
         private final Color skipColor = new Color(237, 170, 37);
         private final Color resetBtnColor = new Color(224, 69, 52);
+        private final Color pauseBtnColor = new Color(77, 79, 255);
 
         // *OFFSET constants
         private final int NUM_CARD_OFFSET = 10;
@@ -109,10 +110,11 @@ public class BigTwo {
             this.mainPanel = new JPanel(new BorderLayout());
             this.secondLine = new JPanel(new BorderLayout());
             this.thirdLine = new JPanel(new BorderLayout());
-            this.frame = new JFrame("Big Two " + version);
+            this.frame = new JFrame("Big Two v" + version);
             this.resetBtn = new JButton("Reset");
             this.playBtn = new JButton("Play");
             this.skipBtn = new JButton("Skip");
+            this.pauseBtn = new JButton("Pause");
             this.selectedCards = new ArrayList<>();
             this.player1 = new JLabel(backIcon);
             this.player2 = new JLabel(backIcon);
@@ -242,6 +244,13 @@ public class BigTwo {
             resetBtn.setPreferredSize(new Dimension(200, 70));
             resetBtn.setActionCommand("0");
 
+            pauseBtn.setBackground(pauseBtnColor);
+            pauseBtn.setForeground(textColor);
+            pauseBtn.setFont(numCardFont);
+            pauseBtn.setPreferredSize(new Dimension(200, 70));
+            pauseBtn.setActionCommand("0");
+
+            btns.add(pauseBtn);
             btns.add(playBtn);
             btns.add(skipBtn);
             btns.add(resetBtn);
@@ -412,6 +421,16 @@ public class BigTwo {
                 resetBtn.setEnabled(false);
             });
 
+            pauseBtn.addActionListener(e -> {
+                if(pauseBtn.getActionCommand().equals("0")){
+                    pauseBtn.setActionCommand("1");
+                    pauseBtn.setText("Unpause");
+                } else {
+                    pauseBtn.setActionCommand("0");
+                    pauseBtn.setText("Pause");
+                }
+            });
+
             // ! HAVEN'T implement if no one can play
             // ! Then the player the next turn can play ANY
             // *CONSOLE FIXED
@@ -539,6 +558,9 @@ public class BigTwo {
                         round = 0;
                         reset();
                         resetGUI();
+                    }
+                    while(pauseBtn.getActionCommand().equals("1")){
+                        Thread.sleep(1000);
                     }
                 }
                 // Show the loser cards
