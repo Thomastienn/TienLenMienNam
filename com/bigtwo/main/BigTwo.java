@@ -77,7 +77,7 @@ public class BigTwo {
         private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
         private JLabel player1, player2, player3;
         private ArrayList<Card> selectedCards;
-        private JButton playBtn, skipBtn;
+        private JButton playBtn, skipBtn, resetBtn;
         private int originTextPos;
         private JFrame frame;
 
@@ -95,6 +95,7 @@ public class BigTwo {
         private final Color instantWinColor = new Color(69, 196, 176);
         private final Color finishedColor = new Color(10, 115, 115);
         private final Color skipColor = new Color(237, 170, 37);
+        private final Color resetBtnColor = new Color(224, 69, 52);
 
         // *OFFSET constants
         private final int NUM_CARD_OFFSET = 10;
@@ -107,6 +108,7 @@ public class BigTwo {
             this.secondLine = new JPanel(new BorderLayout());
             this.thirdLine = new JPanel(new BorderLayout());
             this.frame = new JFrame("Big Two");
+            this.resetBtn = new JButton("Reset");
             this.playBtn = new JButton("Play");
             this.skipBtn = new JButton("Skip");
             this.selectedCards = new ArrayList<>();
@@ -232,8 +234,15 @@ public class BigTwo {
             skipBtn.setPreferredSize(new Dimension(200, 70));
             skipBtn.setActionCommand("0");
 
+            resetBtn.setBackground(resetBtnColor);
+            resetBtn.setForeground(textColor);
+            resetBtn.setFont(numCardFont);
+            resetBtn.setPreferredSize(new Dimension(200, 70));
+            resetBtn.setActionCommand("0");
+
             btns.add(playBtn);
             btns.add(skipBtn);
+            btns.add(resetBtn);
             btns.setBackground(bgColor);
 
             // Load main player cards
@@ -395,6 +404,12 @@ public class BigTwo {
                 skipPlayers.add(listPlayers.get(0));
             });
 
+            resetBtn.addActionListener(e -> {
+                resetBtn.setActionCommand("1");
+                resetBtn.setBackground(disabledColor);
+                resetBtn.setEnabled(false);
+            });
+
             // ! HAVEN'T implement if no one can play
             // ! Then the player the next turn can play ANY
             // *CONSOLE FIXED
@@ -515,6 +530,14 @@ public class BigTwo {
                         currentTurn = currentTurn - 1;
                     }
                     currentTurn = (currentTurn + 1) % (listPlayers.size());
+                    if(resetBtn.getActionCommand().equals("1")){
+                        resetBtn.setActionCommand("0");
+                        resetBtn.setBackground(resetBtnColor);
+                        resetBtn.setEnabled(true);
+                        round = 0;
+                        reset();
+                        resetGUI();
+                    }
                 }
                 // Show the loser cards
                 Player loser = listPlayers.get(0);
@@ -1433,6 +1456,7 @@ public class BigTwo {
 
     private boolean checkValid(ArrayList<Card> cardsPlayed, String playerCardsState) {
         // ! BUG: Have to check if it's the first play, player cards must have the min
+        // *FIXED
         boolean checkSmacking = false;
 
         // Check if player can smack down
