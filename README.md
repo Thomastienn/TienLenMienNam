@@ -18,3 +18,6 @@
 7. Commit all the changes `git commit -a -m "<your messages>"`
 8. Push back to your github `git push origin <your-branch-name>`
 9. Create a pull request -> Click the `New pull request` button on github
+
+## Copyright
+Images by: **Mr. Tony Pietrangelo**
