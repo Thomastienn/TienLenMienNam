@@ -79,7 +79,7 @@ public class BigTwo {
         private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
         private JLabel player1, player2, player3;
         private ArrayList<Card> selectedCards;
-        private JButton playBtn, skipBtn, resetBtn, pauseBtn;
+        private JButton playBtn, skipBtn, resetBtn, pauseBtn, hintBtn;
         private int originTextPos;
         private JFrame frame;
 
@@ -99,6 +99,7 @@ public class BigTwo {
         private final Color skipColor = new Color(237, 170, 37);
         private final Color resetBtnColor = new Color(224, 69, 52);
         private final Color pauseBtnColor = new Color(77, 79, 255);
+        private final Color hintBtnColor = new Color(14, 189, 240);
 
         // *OFFSET constants
         private final int NUM_CARD_OFFSET = 10;
@@ -114,6 +115,7 @@ public class BigTwo {
             this.resetBtn = new JButton("Reset");
             this.playBtn = new JButton("Play");
             this.skipBtn = new JButton("Skip");
+            this.hintBtn = new JButton("Hint");
             this.pauseBtn = new JButton("Pause");
             this.selectedCards = new ArrayList<>();
             this.player1 = new JLabel(backIcon);
@@ -250,7 +252,13 @@ public class BigTwo {
             pauseBtn.setPreferredSize(new Dimension(200, 70));
             pauseBtn.setActionCommand("0");
 
+            hintBtn.setBackground(pauseBtnColor);
+            hintBtn.setForeground(textColor);
+            hintBtn.setFont(numCardFont);
+            hintBtn.setPreferredSize(new Dimension(200, 70));
+
             btns.add(pauseBtn);
+            btns.add(hintBtn);
             btns.add(playBtn);
             btns.add(skipBtn);
             btns.add(resetBtn);
@@ -327,15 +335,19 @@ public class BigTwo {
         private void disableBtns() {
             playBtn.setEnabled(false);
             skipBtn.setEnabled(false);
+            hintBtn.setEnabled(false);
             playBtn.setBackground(disabledColor);
             skipBtn.setBackground(disabledColor);
+            hintBtn.setBackground(disabledColor);
         }
 
         private void enableBtns() {
             playBtn.setEnabled(true);
             skipBtn.setEnabled(true);
+            hintBtn.setEnabled(true);
             playBtn.setBackground(playBtnColor);
             skipBtn.setBackground(skipBtnColor);
+            hintBtn.setBackground(hintBtnColor);
         }
 
         private void displayMessage(String mess) {
@@ -431,6 +443,30 @@ public class BigTwo {
                 }
             });
 
+            hintBtn.addActionListener(e -> {
+                ArrayList<Card> userCards = listPlayers.get(0).getCardsAvailable();
+                ArrayList<Card> botChose = botsPlayed(userCards, 0);
+
+                if(botChose.size() == 0){
+                    return;
+                }
+
+                int idxBotChose = 0;
+                for(int i = 0; i < userCards.size(); i++){
+                    Component c = playerCards.getComponent(i);
+                    Card curUserCard = userCards.get(i);
+
+                    if(curUserCard.compareTo(botChose.get(idxBotChose)) == 0){
+                        JButton cardBtn = (JButton) c;
+                        cardBtn.doClick();
+                        idxBotChose += 1;
+                    }
+                    if(idxBotChose == botChose.size()){
+                        break;
+                    }
+                }
+            });
+
             // ! HAVEN'T implement if no one can play
             // ! Then the player the next turn can play ANY
             // *CONSOLE FIXED
@@ -444,6 +480,7 @@ public class BigTwo {
                 while (!checkFinish()) {
                     //System.out.println(currentTurn);
                     Player curPlayer = listPlayers.get(currentTurn);
+
                     updateCurrentPlayer(curPlayer.getId());
 
                     // When everyone passes the turn
@@ -1426,7 +1463,7 @@ public class BigTwo {
                 break;
         }
 
-        if (botPlayedCards.size() != 0) {
+        if (botPlayedCards.size() != 0 && botID != 0) {
             previousPlayedCard = botPlayedCards;
             lastPlayerPlayed = botID;
         }
