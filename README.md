@@ -1,4 +1,4 @@
-# IN DEVELOPMENT
+# Tien Len Mien Nam (Big Two)
 
 ## How to use
 1. Navigate to your download folder by `cd <path to your download folder>`
