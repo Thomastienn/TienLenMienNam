@@ -1,4 +1,4 @@
-# Tien Len Mien Nam (Big Two)
+# TIEN LEN MIEN NAM (Big Two)
 
 ## How to use
 1. Navigate to your download folder by `cd <path to your download folder>`
