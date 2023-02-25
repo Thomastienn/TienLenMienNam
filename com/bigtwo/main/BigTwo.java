@@ -44,6 +44,7 @@ package com.bigtwo.main;
 * 2023-02-21	TV		1.30	Add a reset button
 * 2023-02-23	TV		1.31	Add a pause button
 * 2023-02-24	TV		1.32	Add a hint button
+* 2023-02-24	TV		1.33	Add a debug button
 * ----------------------------------------------------------------------------------
 * Future Enhancements: 
 * -------------------- 
