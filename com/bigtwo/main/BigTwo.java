@@ -373,26 +373,7 @@ public class BigTwo {
             }
         }
 
-        public void playGUI() throws InterruptedException {
-            initGUI();
-            prevCards.setBorder(new CompoundBorder(prevCards.getBorder(),
-                    new EmptyBorder(secondLine.getHeight() / 2 - 50, 0, 0, 0)));
-
-            int winner = checkInstantWin();
-            if (winner != -1) {
-                JLabel winnerLabel = idToLabel(winner);
-
-                winnerLabel.setText("INSTANT WIN");
-                winnerLabel.setIconTextGap(originTextPos - INSTANT_WIN_OFFSET);
-                winnerLabel.setForeground(instantWinColor);
-
-                previousPlayedCard = listPlayers.get(winner).getCardsAvailable();
-                listPlayers.remove(winner);
-                loadPrevCard();
-                System.out.println("WINNER");
-                return;
-            }
-
+        private void addListenerBtns() {
             playBtn.addActionListener(e -> {
                 selectedCards.sort(((o1, o2) -> o1.compareTo(o2)));
                 String state = stateOfCards(selectedCards);
@@ -491,6 +472,29 @@ public class BigTwo {
 
                 displayMessage(message);
             });
+        }
+
+        public void playGUI() throws InterruptedException {
+            initGUI();
+            prevCards.setBorder(new CompoundBorder(prevCards.getBorder(),
+                    new EmptyBorder(secondLine.getHeight() / 2 - 50, 0, 0, 0)));
+
+            int winner = checkInstantWin();
+            if (winner != -1) {
+                JLabel winnerLabel = idToLabel(winner);
+
+                winnerLabel.setText("INSTANT WIN");
+                winnerLabel.setIconTextGap(originTextPos - INSTANT_WIN_OFFSET);
+                winnerLabel.setForeground(instantWinColor);
+
+                previousPlayedCard = listPlayers.get(winner).getCardsAvailable();
+                listPlayers.remove(winner);
+                loadPrevCard();
+                System.out.println("WINNER");
+                return;
+            }
+
+            addListenerBtns();
 
             // ! HAVEN'T implement if no one can play
             // ! Then the player the next turn can play ANY
