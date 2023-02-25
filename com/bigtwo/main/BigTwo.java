@@ -1545,69 +1545,72 @@ public class BigTwo {
     private boolean checkValid(ArrayList<Card> cardsPlayed, String playerCardsState) {
         // ! BUG: Have to check if it's the first play, player cards must have the min
         // *FIXED
+
         boolean checkSmacking = false;
 
         // Check if player can smack down
-        if (previousPlayedCard.size() == 1) {
-            // Check if last card was a 2
-            if (previousPlayedCard.get(0).getSymbol().equals("2")) {
-                // Check if player plays a smack down
-                if (playerCardsState.contains("SMD") ||
-                        playerCardsState.equals("QUAD")) {
-                    checkSmacking = true;
-                }
-            }
-        } else {
-            // Smack back a smack down sequence
-            if (currentState.contains("SMD")) {
-                String[] stateWithNum = currentState.split("_");
-                int num = Integer.parseInt(stateWithNum[1]);
-
-                // The one with more pairs wins
-                if (playerCardsState.contains("SMD")) {
-                    String[] stateWithNumPlayer = playerCardsState.split("_");
-                    int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
-
-                    if (numPlayer > num) {
-                        checkSmacking = true;
-                    }
-
-                    // A quad can smack back a 3-pair smack down
-                } else if (playerCardsState.equals("QUAD")) {
-                    if (num == 3) {
+        if (previousPlayedCard.size() != 0) {
+            if (previousPlayedCard.size() == 1) {
+                // Check if last card was a 2
+                if (previousPlayedCard.get(0).getSymbol().equals("2")) {
+                    // Check if player plays a smack down
+                    if (playerCardsState.contains("SMD") ||
+                            playerCardsState.equals("QUAD")) {
                         checkSmacking = true;
                     }
                 }
-                // Smack down a pair of 2
-            } else if (currentState.equals("PAIR")) {
-                if (previousPlayedCard.get(0).getSymbol().equals("2") &&
-                        previousPlayedCard.get(1).getSymbol().equals("2")) {
+            } else {
+                // Smack back a smack down sequence
+                if (currentState.contains("SMD")) {
+                    String[] stateWithNum = currentState.split("_");
+                    int num = Integer.parseInt(stateWithNum[1]);
 
-                    // Check if a player wants to smack down pair of 2
-                    // Only valid if the smack down sequence is greater than 3 pairs
-
+                    // The one with more pairs wins
                     if (playerCardsState.contains("SMD")) {
                         String[] stateWithNumPlayer = playerCardsState.split("_");
                         int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
-                        if (numPlayer >= 4) {
+
+                        if (numPlayer > num) {
+                            checkSmacking = true;
+                        }
+
+                        // A quad can smack back a 3-pair smack down
+                    } else if (playerCardsState.equals("QUAD")) {
+                        if (num == 3) {
                             checkSmacking = true;
                         }
                     }
+                    // Smack down a pair of 2
+                } else if (currentState.equals("PAIR")) {
+                    if (previousPlayedCard.get(0).getSymbol().equals("2") &&
+                            previousPlayedCard.get(1).getSymbol().equals("2")) {
 
-                    if (playerCardsState.equals("QUAD")) {
-                        checkSmacking = true;
+                        // Check if a player wants to smack down pair of 2
+                        // Only valid if the smack down sequence is greater than 3 pairs
+
+                        if (playerCardsState.contains("SMD")) {
+                            String[] stateWithNumPlayer = playerCardsState.split("_");
+                            int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
+                            if (numPlayer >= 4) {
+                                checkSmacking = true;
+                            }
+                        }
+
+                        if (playerCardsState.equals("QUAD")) {
+                            checkSmacking = true;
+                        }
                     }
-                }
-                // Smack down a quad by smack down sequence >= 4
-            } else if (currentState.equals("QUAD")) {
-                // Check if a player wants to smack down a quad
-                if (playerCardsState.contains("SMD")) {
-                    String[] stateWithNumPlayer = playerCardsState.split("_");
-                    int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
+                    // Smack down a quad by smack down sequence >= 4
+                } else if (currentState.equals("QUAD")) {
+                    // Check if a player wants to smack down a quad
+                    if (playerCardsState.contains("SMD")) {
+                        String[] stateWithNumPlayer = playerCardsState.split("_");
+                        int numPlayer = Integer.parseInt(stateWithNumPlayer[1]);
 
-                    // Only valid if the smack down sequence is greater than 3 pairs
-                    if (numPlayer >= 4) {
-                        checkSmacking = true;
+                        // Only valid if the smack down sequence is greater than 3 pairs
+                        if (numPlayer >= 4) {
+                            checkSmacking = true;
+                        }
                     }
                 }
             }
