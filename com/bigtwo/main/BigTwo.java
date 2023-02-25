@@ -65,7 +65,7 @@ import javax.swing.border.*;
 
 import java.util.Scanner;
 
-public class BigTwo {   
+public class BigTwo {
     private class GUI {
         // *GUI components
         private final java.awt.GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -74,7 +74,7 @@ public class BigTwo {
         private final int screenHeight = device.getDisplayMode().getHeight();
         private final int screenWidth = device.getDisplayMode().getWidth();
         // ! If there is a top-level folder add its name before "com"
-        // ! Ex: Eclipse has src folder -> Change imgDir to "src/com/bigtwo/images" 
+        // ! Ex: Eclipse has src folder -> Change imgDir to "src/com/bigtwo/images"
         // ! If you import directly to src folder with just 1 package
         // ! Change imgDir -> "src/<your-package-name>/images"
         private final String imgDir = "com/bigtwo/images";
@@ -445,7 +445,7 @@ public class BigTwo {
             });
 
             pauseBtn.addActionListener(e -> {
-                if(pauseBtn.getActionCommand().equals("0")){
+                if (pauseBtn.getActionCommand().equals("0")) {
                     pauseBtn.setActionCommand("1");
                     pauseBtn.setText("Unpause");
                 } else {
@@ -458,21 +458,21 @@ public class BigTwo {
                 ArrayList<Card> userCards = listPlayers.get(0).getCardsAvailable();
                 ArrayList<Card> botChose = botsPlayed(userCards, 0);
 
-                if(botChose.size() == 0){
+                if (botChose.size() == 0) {
                     return;
                 }
 
                 int idxBotChose = 0;
-                for(int i = 0; i < userCards.size(); i++){
+                for (int i = 0; i < userCards.size(); i++) {
                     Component c = playerCards.getComponent(i);
                     Card curUserCard = userCards.get(i);
 
-                    if(curUserCard.compareTo(botChose.get(idxBotChose)) == 0){
+                    if (curUserCard.compareTo(botChose.get(idxBotChose)) == 0) {
                         JButton cardBtn = (JButton) c;
                         cardBtn.doClick();
                         idxBotChose += 1;
                     }
-                    if(idxBotChose == botChose.size()){
+                    if (idxBotChose == botChose.size()) {
                         break;
                     }
                 }
@@ -481,13 +481,13 @@ public class BigTwo {
             debugBtn.addActionListener(e -> {
                 String state = stateOfCards(selectedCards);
                 String message = "Previous cards: " + previousPlayedCard + "\n" +
-                                "Current state: " + currentState + "\n" +
-                                "Selected cards: " + selectedCards + "\n" +
-                                "State of selected cards: " + state + "\n" +
-                                "Valid: " + checkValid(selectedCards, state) + "\n" + 
-                                "Current turn: " + currentTurn + "\n" +
-                                "Last player played: " + lastPlayerPlayed + "\n" + 
-                                "Round: " + round;
+                        "Current state: " + currentState + "\n" +
+                        "Selected cards: " + selectedCards + "\n" +
+                        "State of selected cards: " + state + "\n" +
+                        "Valid: " + checkValid(selectedCards, state) + "\n" +
+                        "Current turn: " + currentTurn + "\n" +
+                        "Last player played: " + lastPlayerPlayed + "\n" +
+                        "Round: " + round;
 
                 displayMessage(message);
             });
@@ -503,7 +503,7 @@ public class BigTwo {
 
             do {
                 while (!checkFinish()) {
-                    //System.out.println(currentTurn);
+                    // System.out.println(currentTurn);
                     Player curPlayer = listPlayers.get(currentTurn);
 
                     updateCurrentPlayer(curPlayer.getId());
@@ -613,7 +613,7 @@ public class BigTwo {
                         currentTurn = currentTurn - 1;
                     }
                     currentTurn = (currentTurn + 1) % (listPlayers.size());
-                    if(resetBtn.getActionCommand().equals("1")){
+                    if (resetBtn.getActionCommand().equals("1")) {
                         resetBtn.setActionCommand("0");
                         resetBtn.setBackground(resetBtnColor);
                         resetBtn.setEnabled(true);
@@ -621,7 +621,7 @@ public class BigTwo {
                         reset();
                         resetGUI();
                     }
-                    while(pauseBtn.getActionCommand().equals("1")){
+                    while (pauseBtn.getActionCommand().equals("1")) {
                         Thread.sleep(1000);
                     }
                 }

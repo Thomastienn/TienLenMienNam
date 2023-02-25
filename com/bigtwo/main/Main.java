@@ -20,23 +20,23 @@ package com.bigtwo.main;
 * -------------------- 
 * 1. To allow input about number of players via parameterization (Done 20-02-2023)
 * 								
-*/ 
+*/
 
 import javax.swing.JOptionPane;
 
 public class Main {
     /**
-	 * @param args
-	 */
+     * @param args
+     */
     public static void main(String[] args) throws InterruptedException {
         // declare variables for ProgramName, and version.
-		String programName = Main.class.getName();
-		String programVersion = "1.71";
-		
-		// output at start programName and Version.
- 		System.out.println(" Start: " + programName); 
- 		System.out.println("Verson: " + programVersion + "\n");
-        
+        String programName = Main.class.getName();
+        String programVersion = "1.71";
+
+        // output at start programName and Version.
+        System.out.println(" Start: " + programName);
+        System.out.println("Verson: " + programVersion + "\n");
+
         String players = JOptionPane.showInputDialog("How many players do you want? (2-4)", "4");
 
         try {
@@ -46,7 +46,7 @@ public class Main {
             System.out.println(e);
         }
 
-        System.out.println(); 
-		System.out.println("End of Program: " + programName); 
+        System.out.println();
+        System.out.println("End of Program: " + programName);
     }
 }
