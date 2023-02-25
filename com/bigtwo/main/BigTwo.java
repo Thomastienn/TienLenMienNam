@@ -42,6 +42,8 @@ package com.bigtwo.main;
 * 2023-02-20	TV 		1.28	Implement industry standard
 * 2023-02-21	LT 		1.29	Add future enhancements
 * 2023-02-21	TV		1.30	Add a reset button
+* 2023-02-23	TV		1.31	Add a pause button
+* 2023-02-24	TV		1.32	Add a hint button
 * ----------------------------------------------------------------------------------
 * Future Enhancements: 
 * -------------------- 
@@ -79,7 +81,7 @@ public class BigTwo {
         private final ImageIcon backIcon = new ImageIcon(imgDir + "/gray_back.png");
         private JLabel player1, player2, player3;
         private ArrayList<Card> selectedCards;
-        private JButton playBtn, skipBtn, resetBtn, pauseBtn, hintBtn;
+        private JButton playBtn, skipBtn, resetBtn, pauseBtn, hintBtn, debugBtn;
         private int originTextPos;
         private JFrame frame;
 
@@ -100,6 +102,7 @@ public class BigTwo {
         private final Color resetBtnColor = new Color(224, 69, 52);
         private final Color pauseBtnColor = new Color(77, 79, 255);
         private final Color hintBtnColor = new Color(14, 189, 240);
+        private final Color debugBtnColor = new Color(65, 14, 230);
 
         // *OFFSET constants
         private final int NUM_CARD_OFFSET = 10;
@@ -117,6 +120,7 @@ public class BigTwo {
             this.skipBtn = new JButton("Skip");
             this.hintBtn = new JButton("Hint");
             this.pauseBtn = new JButton("Pause");
+            this.debugBtn = new JButton("Debug");
             this.selectedCards = new ArrayList<>();
             this.player1 = new JLabel(backIcon);
             this.player2 = new JLabel(backIcon);
@@ -252,16 +256,22 @@ public class BigTwo {
             pauseBtn.setPreferredSize(new Dimension(200, 70));
             pauseBtn.setActionCommand("0");
 
-            hintBtn.setBackground(pauseBtnColor);
+            hintBtn.setBackground(hintBtnColor);
             hintBtn.setForeground(textColor);
             hintBtn.setFont(numCardFont);
             hintBtn.setPreferredSize(new Dimension(200, 70));
+
+            debugBtn.setBackground(debugBtnColor);
+            debugBtn.setForeground(textColor);
+            debugBtn.setFont(numCardFont);
+            debugBtn.setPreferredSize(new Dimension(100, 70));
 
             btns.add(pauseBtn);
             btns.add(hintBtn);
             btns.add(playBtn);
             btns.add(skipBtn);
             btns.add(resetBtn);
+            btns.add(debugBtn);
             btns.setBackground(bgColor);
 
             // Load main player cards
@@ -465,6 +475,20 @@ public class BigTwo {
                         break;
                     }
                 }
+            });
+
+            debugBtn.addActionListener(e -> {
+                String state = stateOfCards(selectedCards);
+                String message = "Previous cards: " + previousPlayedCard + "\n" +
+                                "Current state: " + currentState + "\n" +
+                                "Selected cards: " + selectedCards + "\n" +
+                                "State of selected cards: " + state + "\n" +
+                                "Valid: " + checkValid(selectedCards, state) + "\n" + 
+                                "Current turn: " + currentTurn + "\n" +
+                                "Last player played: " + lastPlayerPlayed + "\n" + 
+                                "Round: " + round;
+
+                displayMessage(message);
             });
 
             // ! HAVEN'T implement if no one can play
