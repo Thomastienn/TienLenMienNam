@@ -1248,6 +1248,7 @@ public class BigTwo {
 
     private ArrayList<Card> botsPlayed(ArrayList<Card> botCards, int botID) {
         ArrayList<Card> botPlayedCards = new ArrayList<>();
+        String originState = currentState;
 
         // ! OPTIMIZE in the future
         int cardsNeeded = allSymbolStates.indexOf(currentState);
@@ -1495,6 +1496,9 @@ public class BigTwo {
         if (botPlayedCards.size() != 0 && botID != 0) {
             previousPlayedCard = botPlayedCards;
             lastPlayerPlayed = botID;
+        }
+        if(botID == 0){
+            currentState = originState;
         }
         return botPlayedCards;
     }

@@ -31,7 +31,7 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         // declare variables for ProgramName, and version.
         String programName = Main.class.getName();
-        String programVersion = "1.73";
+        String programVersion = "1.74";
 
         // output at start programName and Version.
         System.out.println(" Start: " + programName);
