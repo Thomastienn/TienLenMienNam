@@ -1,5 +1,6 @@
 # TIEN LEN MIEN NAM (Big Two)
 
+## Because of the 2-week deadline, the code is not efficiently organized.
 ## How to use
 1. Navigate to your download folder by `cd <path to your download folder>`
 2. `git clone https://github.com/Thomastienn/TienLenMienNam`
